@@ -1,0 +1,21 @@
+*{
+    margin: 0px; 
+    padding: 0px;
+    box-sizing: border-box;
+    font-family: system-ui;
+}
+html{
+/*    overflow-x: hidden;*/
+}
+/*
+.container{
+    min-width: 100%;
+}
+*/
+a{
+    color: inherit;
+    text-decoration: none;
+}
+ul{
+    list-style-type: none;
+}

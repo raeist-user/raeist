@@ -1,0 +1,15 @@
+/*
+:root{
+    --clr-primary: #2d2d2d;
+   --clr-accent: #1f2020; 
+    --clr-black: black;
+    --clr-white: #eaeaea;
+}
+*/
+:root{
+    --clr-primary: #f4f4f4;
+   --clr-accent: #efefef; 
+    --clr-black: black;
+    --clr-text: #383838;
+    --clr-text2: white;
+}

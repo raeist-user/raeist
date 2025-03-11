@@ -1,0 +1,100 @@
+.wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    > .container {
+        max-width: 1600px;
+    }
+}
+#line{
+    width: 190px;
+    height: 10px;
+    background-color: #000000;
+    display: inline-block;
+    margin: 3%;
+    margin-left: 0px;
+}
+.img-con {
+
+    > .img-bg {
+        width: 500px;
+        margin: 1.5rem 5rem;
+        background: #f2f2f2;
+        border-radius: 20px;
+        display: flex;
+        justify-content: center;
+
+        > img {
+            max-width: 500px;
+        }
+    }
+}
+
+/*
+div{
+    border: 1px solid red;
+    margin: 2px;
+}
+*/
+.homepage {
+
+    > .top {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 5rem;
+        background: #e0e0e0;
+        width: 100%;
+
+        > .left {
+            display: grid;
+            place-items: center;
+        }
+
+        > .right {
+            > nav {
+                > ul {
+                    display: flex;
+                    gap: 3rem;
+                }
+            }
+        }
+    }
+
+    > .bottom {
+        display: flex;
+        justify-content: space-between;
+        > .left {
+            /*            min-width: 50%;*/
+            /*            line number 9 to 19 contains universal rule for img-con*/
+        }
+
+        > .right {
+            display: flex;
+            max-width: 50%;
+            align-items: center;
+            justify-content: center;
+
+            > .intro-con {
+                > .top {
+                    display: flex;
+                    justify-content: center;
+                    > h1 {
+                        font-size: 4.5rem;
+                        max-width: 20ch;
+                        
+
+                    }
+
+                }
+
+                > .bottom p {
+                    max-width: 65ch;
+                }
+
+            }
+
+        }
+    }
+}
+}
