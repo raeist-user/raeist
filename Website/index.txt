@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adnan nafees | Links</title>
+    <!-- External Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="body" data-palette="monochrome">
+
+    <header class="top-nav">
+        <div class="view-counter"><i class="far fa-eye"></i> <span id="view-count">0</span></div>
+        <div class="flex gap-1">
+            <button class="p-3" id="palette-btn"><i class="fas fa-palette"></i></button>
+            <button class="p-3" id="flip-btn"><i class="fas fa-circle-half-stroke"></i></button>
+        </div>
+    </header>
+
+    <!-- Playlist Selection Modal -->
+    <div class="music-overlay" id="playlist-choice-modal">
+        <div class="flex justify-between items-center mb-8">
+            <span class="text-[0.7rem] uppercase tracking-widest opacity-50">Select Playlist</span>
+            <button class="p-2 close-music"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="space-y-3">
+            <div class="playlist-select-item" onclick="openSongs('bollywood')">
+                <div class="flex items-center gap-4"><i class="fas fa-compact-disc text-xl opacity-40"></i><span>Bollywood</span></div>
+                <i class="fas fa-chevron-right text-[10px] opacity-20"></i>
+            </div>
+            <div class="playlist-select-item" onclick="openSongs('english')">
+                <div class="flex items-center gap-4"><i class="fas fa-globe-americas text-xl opacity-40"></i><span>English</span></div>
+                <i class="fas fa-chevron-right text-[10px] opacity-20"></i>
+            </div>
+            <div class="playlist-select-item" onclick="openSongs('workout')">
+                <div class="flex items-center gap-4"><i class="fas fa-dumbbell text-xl opacity-40"></i><span>Workout</span></div>
+                <i class="fas fa-chevron-right text-[10px] opacity-20"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Song List Modal -->
+    <div class="music-overlay" id="song-list-modal">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <button class="p-2 -ml-2" onclick="backToPlaylists()"><i class="fas fa-arrow-left"></i></button>
+                <span class="text-[0.7rem] uppercase tracking-widest opacity-50" id="current-playlist-name">Songs</span>
+            </div>
+            <button class="p-2 close-music"><i class="fas fa-times"></i></button>
+        </div>
+        <input type="text" class="search-bar" placeholder="Search songs..." id="song-search">
+        <div class="song-list-scroll" id="song-list"></div>
+    </div>
+
+    <!-- Theme Modal -->
+    <div class="custom-overlay" id="theme-overlay">
+        <div class="custom-modal">
+            <div class="flex justify-between items-center mb-6"><span class="text-[0.7rem] uppercase opacity-50">Theme Library</span><button class="close-modal"><i class="fas fa-times"></i></button></div>
+            <div class="theme-grid" id="theme-grid"></div>
+        </div>
+    </div>
+
+    <!-- Intro Modal -->
+    <div class="custom-overlay" id="intro-overlay">
+        <div class="custom-modal">
+            <div class="flex justify-between items-center mb-6"><span class="text-[0.7rem] uppercase opacity-50">Intro</span><button class="close-modal"><i class="fas fa-times"></i></button></div>
+            <div class="text-left space-y-5">
+                <p class="text-[0.95rem] leading-relaxed">
+                    I'm <strong>Adnan nafees</strong>, virtually known as <strong>raeist</strong> from Bihar. I find beauty in the intersection of logic and creative expression.
+                </p>
+                <div>
+                    <span class="text-[0.6rem] uppercase tracking-widest opacity-40 block mb-2">Languages</span>
+                    <div class="flex flex-wrap gap-2"><span class="tag">English</span><span class="tag">Hindi</span><span class="tag">Urdu</span><span class="tag">Thēthi</span><span class="tag">Arabic</span></div>
+                </div>
+                <div>
+                    <span class="text-[0.6rem] uppercase tracking-widest opacity-40 block mb-2">Skills</span>
+                    <div class="flex flex-wrap gap-2"><span class="tag">Web Dev</span><span class="tag">Graphic Design</span><span class="tag">Poetry</span><span class="tag">Translation Art</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="mb-10">
+            <div class="profile-wrapper">
+                <div class="profile-initials">AN</div>
+                <div class="status-dot"></div>
+            </div>
+            <h1 class="text-xl font-semibold mt-4">Adnan nafees <i class="fas fa-info-circle text-[10px] opacity-30 cursor-pointer ml-1" id="intro-trigger"></i></h1>
+            <p class="text-[0.75rem] tracking-[0.2em] opacity-40">@raeist</p>
+        </div>
+
+        <div class="links-wrapper">
+            <a href="https://instagram.com/adnannafees__" target="_blank" class="social-link"><i class="fab fa-instagram"></i><span>Instagram</span><i class="fas fa-arrow-right text-[10px] opacity-20"></i></a>
+            <a href="https://discord.gg/8vdkmKmm" target="_blank" class="social-link"><i class="fab fa-discord"></i><span>Discord</span><i class="fas fa-arrow-right text-[10px] opacity-20"></i></a>
+            <a href="https://open.spotify.com/user/31ajwponuh7kzf6x4gieqhoygmym?si=YoDbNxSGQZKONqde7MyMzQ" target="_blank" class="social-link"><i class="fab fa-spotify"></i><span>Spotify Profile</span><i class="fas fa-arrow-right text-[10px] opacity-20"></i></a>
+            <a href="https://www.pinterest.com/realraeist" target="_blank" class="social-link"><i class="fab fa-pinterest"></i><span>Pinterest</span><i class="fas fa-arrow-right text-[10px] opacity-20"></i></a>
+            <a href="mailto:imadnannafees@gmail.com" class="social-link"><i class="far fa-envelope"></i><span>Email</span><i class="fas fa-arrow-right text-[10px] opacity-20"></i></a>
+            
+            <div class="music-card" id="spotify-card">
+                <div class="music-bars" id="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                <div class="flex flex-col">
+                    <span class="text-[0.6rem] uppercase opacity-40" id="music-status">Spotify Hub</span>
+                    <span class="text-[0.85rem] font-medium" id="song-display">Play from my playlist</span>
+                </div>
+                <div class="dice-btn" id="random-btn"><i class="fas fa-dice"></i></div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="flex items-center justify-center gap-1">
+                <div id="dob-container" class="cursor-pointer group">
+                    Adnan nafees • <span id="dob-val">2007</span>
+                    <i class="fas fa-info-circle text-[9px] opacity-20 group-hover:opacity-40 transition-opacity ml-0.5"></i>
+                </div>
+            </div>
+            <div class="text-xs mt-2 opacity-50" id="clock">IST • --:--:-- --</div>
+        </footer>
+    </div>
+
+    <!-- Local JS -->
+    <script src="script.js"></script>
+</body>
+</html>
+
