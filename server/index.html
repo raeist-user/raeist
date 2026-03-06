@@ -321,8 +321,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(function() {});
 
     // ── Music Player ──
-    var API_URL  = 'https://api.github.com/repos/' + USER + '/' + REPO + '/contents/' + FOLDER;
-    var RAW_BASE = 'https://raw.githubusercontent.com/' + USER + '/' + REPO + '/main/' + FOLDER + '/';
+    var API_URL  = 'https://api.github.com/repos/' + USER + '/' + 'song' + '/contents/' + 'music';
+    var RAW_BASE = 'https://raw.githubusercontent.com/' + USER + '/' + 'song' + '/main/' + 'music' + '/';
 
     var audio        = document.getElementById('main-audio');
     var playPauseBtn = document.getElementById('play-pause-btn');
