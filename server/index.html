@@ -471,9 +471,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── View Counter (GitHub data.json) ──
     var GH_TOKEN = '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';
-    var GH_API   = 'https://api.github.com/repos/raeist-user/raeist/contents/storage/data.json';
+    var GH_API   = 'https://api.github.com/repos/' + VIEW_USER + '/' + VIEW_REPO + '/contents/storage/data.json';
     var vcEl     = document.getElementById('view-count');
-    var SEEN_KEY = 'raeist_seen';
+    var SEEN_KEY = 'raeist_v2';
     var stored   = localStorage.getItem(SEEN_KEY);
 
     fetch(GH_API, { headers: { Authorization: 'token ' + GH_TOKEN, Accept: 'application/vnd.github.v3+json' } })
@@ -551,9 +551,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function fetchTimeout(url, ms) {
         ms = ms || 8000;
-        var ctrl = new AbortController();
-        var id = setTimeout(function() { ctrl.abort(); }, ms);
-        return fetch(url, {signal: ctrl.signal}).finally(function() { clearTimeout(id); });
+        var ctrl    = new AbortController();
+        var id      = setTimeout(function() { ctrl.abort(); }, ms);
+        var isGH    = url.indexOf('api.github.com') !== -1;
+        var opts    = { signal: ctrl.signal };
+        if (isGH) opts.headers = { Authorization: 'token ' + GH_TOKEN };
+        return fetch(url, opts).finally(function() { clearTimeout(id); });
     }
 
     // Fetch root music folder → detect subfolders → fetch each as a playlist
