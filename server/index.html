@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https: data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://api.counterapi.dev https://cdn.tailwindcss.com https://cdnjs.cloudflare.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https: data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://cdn.tailwindcss.com https://cdnjs.cloudflare.com;">
     <title>Adnan nafees | Links</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -469,25 +469,34 @@ document.addEventListener('DOMContentLoaded', function() {
         clickSound(dobExpanded ? 600 : 300);
     };
 
-    // ── View Counter (counterapi.dev — once per browser) ──
+    // ── View Counter (GitHub data.json) ──
+    var GH_TOKEN = 'YOUR_TOKEN_HERE';
+    var GH_API   = 'https://api.github.com/repos/raeist-user/raeist/contents/storage/data.json';
     var vcEl     = document.getElementById('view-count');
     var SEEN_KEY = 'raeist_seen';
     var stored   = localStorage.getItem(SEEN_KEY);
 
-    if (stored) {
-        // Already counted — just show saved count
-        vcEl.textContent = parseInt(stored).toLocaleString();
-    } else {
-        // First visit — increment and save result
-        fetch('https://api.counterapi.dev/v1/raeist-user/pageviews/up')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.count !== undefined) {
-                    vcEl.textContent = data.count.toLocaleString();
-                    localStorage.setItem(SEEN_KEY, data.count);
-                } else vcEl.textContent = '—';
-            }).catch(function() { vcEl.textContent = '—'; });
-    }
+    fetch(GH_API, { headers: { Authorization: 'token ' + GH_TOKEN, Accept: 'application/vnd.github.v3+json' } })
+        .then(function(r) { return r.json(); })
+        .then(function(meta) {
+            if (!meta.sha) { vcEl.textContent = meta.message || 'err'; return; }
+            var sha     = meta.sha;
+            var decoded = decodeURIComponent(escape(atob(meta.content.replace(/\n/g, ''))));
+            var views   = JSON.parse(decoded).views || 0;
+
+            if (stored) { vcEl.textContent = views.toLocaleString(); return; }
+
+            var nv      = views + 1;
+            var encoded = btoa(unescape(encodeURIComponent(JSON.stringify({ views: nv }, null, 2))));
+            fetch(GH_API, {
+                method: 'PUT',
+                headers: { Authorization: 'token ' + GH_TOKEN, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'chore: update views', content: encoded, sha: sha })
+            }).then(function(r) {
+                if (r.ok) { vcEl.textContent = nv.toLocaleString(); localStorage.setItem(SEEN_KEY, '1'); }
+                else r.json().then(function(e) { vcEl.textContent = 'PUT:' + e.message; });
+            }).catch(function() { vcEl.textContent = 'net-err'; });
+        }).catch(function() { vcEl.textContent = 'net-err'; });
 
     // ── Play Frequency Store ──
     var PLAYS_KEY = 'raeist_plays';
