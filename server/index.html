@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https: data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://cdn.tailwindcss.com https://cdnjs.cloudflare.com;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https: data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://api.counterapi.dev https://cdn.tailwindcss.com https://cdnjs.cloudflare.com;">
     <title>Adnan nafees | Links</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var SONG_USER  = 'raeist-user';
     var SONG_REPO  = 'song';
     var SONG_BASE  = 'music';
-    var PLAYLISTS  = [];   // auto-detected
+    var PLAYLISTS  = [];
     var RAW_BASE   = 'https://raw.githubusercontent.com/' + SONG_USER + '/' + SONG_REPO + '/main/' + SONG_BASE + '/';
 
     // ── Email ──
@@ -463,50 +463,34 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.querySelectorAll('.close-modal').forEach(function(b) { b.onclick = function() { b.closest('.custom-overlay').classList.remove('active'); }; });
     var dobExpanded = false;
-    document.getElementById('dob-container').onclick = function() {
+    $on('dob-container', function() {
         dobExpanded = !dobExpanded;
         document.getElementById('dob-val').textContent = dobExpanded ? '1/May/2007' : '2007';
         clickSound(dobExpanded ? 600 : 300);
-    };
+    });
 
-    // ── View Counter (GitHub data.json) ──
-    var GH_TOKEN = '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';
-    var GH_API   = 'https://api.github.com/repos/' + VIEW_USER + '/' + VIEW_REPO + '/contents/storage/data.json';
+    // ── View Counter (counterapi.dev — once per browser) ──
     var vcEl     = document.getElementById('view-count');
     var SEEN_KEY = 'raeist_v2';
     var stored   = localStorage.getItem(SEEN_KEY);
 
-    fetch(GH_API, { headers: { Authorization: 'token ' + GH_TOKEN, Accept: 'application/vnd.github.v3+json' } })
-        .then(function(r) { return r.json(); })
-        .then(function(meta) {
-            if (!meta.sha) { vcEl.textContent = meta.message || 'err'; return; }
-            var sha     = meta.sha;
-            var decoded = decodeURIComponent(escape(atob(meta.content.replace(/\n/g, ''))));
-            var views   = JSON.parse(decoded).views || 0;
-
-            if (stored) { vcEl.textContent = views.toLocaleString(); return; }
-
-            var nv      = views + 1;
-            var encoded = btoa(unescape(encodeURIComponent(JSON.stringify({ views: nv }, null, 2))));
-            fetch(GH_API, {
-                method: 'PUT',
-                headers: { Authorization: 'token ' + GH_TOKEN, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: 'chore: update views', content: encoded, sha: sha })
-            }).then(function(r) {
-                if (r.ok) { vcEl.textContent = nv.toLocaleString(); localStorage.setItem(SEEN_KEY, '1'); }
-                else r.json().then(function(e) { vcEl.textContent = 'PUT:' + e.message; });
-            }).catch(function() { vcEl.textContent = 'net-err'; });
-        }).catch(function() { vcEl.textContent = 'net-err'; });
+    if (stored) {
+        vcEl.textContent = parseInt(stored).toLocaleString();
+    } else {
+        fetch('https://api.counterapi.dev/v1/raeist-user/pageviews/up')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.count !== undefined) {
+                    vcEl.textContent = data.count.toLocaleString();
+                    localStorage.setItem(SEEN_KEY, data.count);
+                }
+            }).catch(function() {});
+    }
 
     // ── Play Frequency Store ──
     var PLAYS_KEY = 'raeist_plays';
-    function getPlays() {
-        try { return JSON.parse(localStorage.getItem(PLAYS_KEY)) || {}; } catch(e) { return {}; }
-    }
-    function incrementPlay(key) {
-        var p = getPlays(); p[key] = (p[key] || 0) + 1;
-        localStorage.setItem(PLAYS_KEY, JSON.stringify(p));
-    }
+    function getPlays() { try { return JSON.parse(localStorage.getItem(PLAYS_KEY)) || {}; } catch(e) { return {}; } }
+    function incrementPlay(key) { var p = getPlays(); p[key] = (p[key] || 0) + 1; localStorage.setItem(PLAYS_KEY, JSON.stringify(p)); }
     function getPlayCount(key) { return getPlays()[key] || 0; }
 
     // ── Music Player ──
@@ -538,56 +522,40 @@ document.addEventListener('DOMContentLoaded', function() {
     var searchInput  = document.getElementById('lib-search');
     var algoBtn      = document.getElementById('algo-btn');
 
-    var songs        = [];   // all songs: {t, file, playlist, lrc, key}
-    var currentLyrics = [], currentIndex = -1;
+    var songs = [], currentLyrics = [], currentIndex = -1;
     var isRandom = false, isRepeat = false, isDragging = false;
     var holdTimer = null, longPress = false;
-    var activeTab    = 'all';
-    var algoMode     = false;
-    var searchQuery  = '';
-    var songContext  = 'all'; // playlist context the current song was loaded from
+    var activeTab = 'all', algoMode = false, searchQuery = '', songContext = 'all';
 
     function fmt(s) { return Math.floor(s/60) + ':' + Math.floor(s%60).toString().padStart(2,'0'); }
 
     function fetchTimeout(url, ms) {
         ms = ms || 8000;
-        var ctrl    = new AbortController();
-        var id      = setTimeout(function() { ctrl.abort(); }, ms);
-        var isGH    = url.indexOf('api.github.com') !== -1;
-        var opts    = { signal: ctrl.signal };
-        if (isGH) opts.headers = { Authorization: 'token ' + GH_TOKEN };
-        return fetch(url, opts).finally(function() { clearTimeout(id); });
+        var ctrl = new AbortController();
+        var id   = setTimeout(function() { ctrl.abort(); }, ms);
+        return fetch(url, { signal: ctrl.signal }).finally(function() { clearTimeout(id); });
     }
 
-    // Fetch root music folder → detect subfolders → fetch each as a playlist
     function initLibrary() {
         var rootUrl = 'https://api.github.com/repos/' + SONG_USER + '/' + SONG_REPO + '/contents/' + SONG_BASE;
         fetchTimeout(rootUrl)
             .then(function(r) { return r.ok ? r.json() : []; })
             .then(function(data) {
-                if (!Array.isArray(data)) throw new Error();
-                // Pick only directories; fall back to root audio files if no subdirs
+                if (!Array.isArray(data)) throw new Error('not array');
                 var dirs = data.filter(function(f) { return f.type === 'dir'; });
-                if (dirs.length) {
-                    PLAYLISTS = dirs.map(function(d) { return d.name; });
-                } else {
-                    // No subfolders — treat root itself as one playlist
-                    PLAYLISTS = [SONG_BASE];
-                }
-                // Rebuild tabs dynamically
+                PLAYLISTS = dirs.length ? dirs.map(function(d) { return d.name; }) : [SONG_BASE];
                 renderTabs();
-                // Fetch all playlists in parallel
                 var promises = PLAYLISTS.map(function(pl) {
                     var plPath = dirs.length ? (SONG_BASE + '/' + pl) : SONG_BASE;
                     var url = 'https://api.github.com/repos/' + SONG_USER + '/' + SONG_REPO + '/contents/' + plPath;
                     return fetchTimeout(url).then(function(r) { return r.ok ? r.json() : []; })
                         .then(function(files) {
                             if (!Array.isArray(files)) return [];
-                            var audioFiles = files.filter(function(f) { return /\.(mp3|wav|ogg|m4a)$/i.test(f.name); });
-                            var lrcFiles   = files.filter(function(f) { return f.name.endsWith('.lrc'); });
-                            return audioFiles.map(function(f) {
+                            var af = files.filter(function(f) { return /\.(mp3|wav|ogg|m4a)$/i.test(f.name); });
+                            var lf = files.filter(function(f) { return f.name.endsWith('.lrc'); });
+                            return af.map(function(f) {
                                 var base = f.name.replace(/\.[^/.]+$/, '');
-                                var lrc  = lrcFiles.find(function(l) { return l.name.startsWith(base); });
+                                var lrc  = lf.find(function(l) { return l.name.startsWith(base); });
                                 return { t: base.replace(/[-_]/g, ' '), file: f.name, playlist: pl, lrc: lrc ? lrc.name : null, key: pl + '/' + f.name };
                             });
                         }).catch(function() { return []; });
@@ -598,10 +566,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 songs = [].concat.apply([], results);
                 renderLibrary();
                 statusLabel.textContent = 'Sync Complete';
-                artistName.textContent = songs.length + ' tracks';
-            }).catch(function() {
+                artistName.textContent  = songs.length + ' tracks';
+            }).catch(function(e) {
                 statusLabel.textContent = 'Sync Failed';
-                artistName.textContent = 'Check repo / connection';
+                artistName.textContent  = 'Check connection';
             });
     }
 
@@ -612,7 +580,6 @@ document.addEventListener('DOMContentLoaded', function() {
             html += '<div class="lib-tab" data-tab="' + pl + '">' + pl.charAt(0).toUpperCase() + pl.slice(1) + '</div>';
         });
         tabsEl.innerHTML = html;
-        // Re-attach click handlers
         tabsEl.querySelectorAll('.lib-tab').forEach(function(tab) {
             tab.onclick = function() {
                 tabsEl.querySelectorAll('.lib-tab').forEach(function(t) { t.classList.remove('active'); });
@@ -626,68 +593,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getFilteredSongs() {
         var list = songs.slice();
-
-        // Tab filter
-        if (activeTab !== 'all') {
-            list = list.filter(function(s) { return s.playlist === activeTab; });
-        }
-
-        // Search filter
-        if (searchQuery) {
-            var q = searchQuery.toLowerCase();
-            list = list.filter(function(s) { return s.t.toLowerCase().indexOf(q) !== -1; });
-        }
-
-        // Algorithm sort: most played first
-        if (algoMode) {
-            list.sort(function(a, b) { return getPlayCount(b.key) - getPlayCount(a.key); });
-        }
-
+        if (activeTab !== 'all') list = list.filter(function(s) { return s.playlist === activeTab; });
+        if (searchQuery) { var q = searchQuery.toLowerCase(); list = list.filter(function(s) { return s.t.toLowerCase().indexOf(q) !== -1; }); }
+        if (algoMode) list.sort(function(a, b) { return getPlayCount(b.key) - getPlayCount(a.key); });
         return list;
     }
 
     function renderLibrary() {
         var list = getFilteredSongs();
         libCount.textContent = songs.length + ' tracks \u2022 ' + (activeTab === 'all' ? 'All playlists' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1));
-
-        if (!list.length) {
-            libContainer.innerHTML = '<div class="no-results">No songs found</div>';
-            return;
-        }
-
-        // Group by playlist only when showing All and not in algo mode
+        if (!list.length) { libContainer.innerHTML = '<div class="no-results">No songs found</div>'; return; }
         var html = '';
         if (activeTab === 'all' && !algoMode && !searchQuery) {
             PLAYLISTS.forEach(function(pl) {
                 var group = list.filter(function(s) { return s.playlist === pl; });
                 if (!group.length) return;
-                html += '<div class="playlist-label"><i class="fas fa-music mr-1"></i>' + pl.charAt(0).toUpperCase() + pl.slice(1) + ' &nbsp;&bull;&nbsp; ' + group.length + ' tracks</div>';
+                html += '<div class="playlist-label"><i class="fas fa-music mr-1"></i>' + pl.charAt(0).toUpperCase() + pl.slice(1) + ' \u2022 ' + group.length + ' tracks</div>';
                 group.forEach(function(s) { html += songRow(s); });
             });
         } else {
             list.forEach(function(s) { html += songRow(s); });
         }
-
         libContainer.innerHTML = html;
     }
 
     function songRow(s) {
-        var plays  = getPlayCount(s.key);
-        var isNow  = (currentIndex !== -1 && songs[currentIndex] && songs[currentIndex].key === s.key);
-        var idx    = songs.indexOf(s);
-        var badge  = (algoMode && plays > 0) ? '<span class="freq-badge">' + plays + 'x</span>' : '';
-        var title  = s.displayTitle || s.t;
-        var sub    = s.artist ? s.artist : (s.playlist.charAt(0).toUpperCase() + s.playlist.slice(1));
-        if (s.lrc) sub += ' \u2022 Lyrics';
+        var plays = getPlayCount(s.key);
+        var isNow = (currentIndex !== -1 && songs[currentIndex] && songs[currentIndex].key === s.key);
+        var idx   = songs.indexOf(s);
+        var badge = (algoMode && plays > 0) ? '<span class="freq-badge">' + plays + 'x</span>' : '';
+        var sub   = s.playlist.charAt(0).toUpperCase() + s.playlist.slice(1) + (s.lrc ? ' \u2022 Lyrics' : '');
         return '<div class="song-item" onclick="window.__load(' + idx + ')">' +
             '<div class="song-item-left">' +
             '<div class="song-num' + (isNow ? ' playing' : '') + '">' +
             (isNow ? '<i class="fas fa-volume-up" style="font-size:.55rem"></i>' : (idx + 1)) +
-            '</div>' +
-            '<div class="song-meta">' +
-            '<div class="song-name">' + title + '</div>' +
-            '<div class="song-sub">' + sub + '</div>' +
-            '</div></div>' +
+            '</div><div class="song-meta"><div class="song-name">' + s.t + '</div>' +
+            '<div class="song-sub">' + sub + '</div></div></div>' +
             '<div class="flex items-center gap-2">' + badge +
             '<i class="fas fa-play text-[0.55rem] opacity-20"></i></div></div>';
     }
@@ -695,17 +636,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.__load = function(index) {
         songContext = activeTab;
         loadSong(index);
-        incrementPlay(songs[index].key); // always count manual taps
+        incrementPlay(songs[index].key);
     };
 
     function loadSong(index) {
         if (index < 0 || index >= songs.length) return;
         currentIndex = index;
-        var s = songs[index];
+        var s   = songs[index];
         var url = RAW_BASE + s.playlist + '/' + s.file;
-
         songTitle.textContent   = s.t;
-        artistName.textContent = s.playlist.charAt(0).toUpperCase() + s.playlist.slice(1);
+        artistName.textContent  = s.playlist.charAt(0).toUpperCase() + s.playlist.slice(1);
         statusLabel.textContent = 'Now Playing';
         audio.src = url;
         audio.play().catch(function() {});
@@ -714,93 +654,16 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleMenu.classList.add('active-state');
         document.getElementById('playlist-overlay').classList.remove('active');
         lyricsCont.innerHTML = ''; currentLyrics = [];
-
-        // Preload next
         if (currentIndex + 1 < songs.length) {
             var nxt = songs[currentIndex + 1];
             var pre = new Audio(); pre.preload = 'auto';
             pre.src = RAW_BASE + nxt.playlist + '/' + nxt.file;
         }
-
-        // Read ID3 tags from MP3
-        var metaRow      = document.getElementById('song-meta-row');
-        var songAlbumEl  = document.getElementById('song-album');
-        var songYearEl   = document.getElementById('song-year');
-        var songYearSep  = document.getElementById('song-year-sep');
-        var songPlTag    = document.getElementById('song-playlist-tag');
-        var songPlSep    = document.getElementById('song-playlist-sep');
-
-        // Reset meta row
-        metaRow.style.display = 'none';
-        songAlbumEl.textContent = ''; songYearEl.textContent = '';
-        songPlTag.textContent = s.playlist.charAt(0).toUpperCase() + s.playlist.slice(1);
-
-        if (window.jsmediatags && s.file.match(/\.mp3$/i)) {
-            jsmediatags.read(url, {
-                onSuccess: function(tag) {
-                    var tags = tag.tags;
-
-                    // Artist
-                    if (tags.artist) { artistName.textContent = tags.artist; s.artist = tags.artist; }
-                    // Title
-                    if (tags.title) { songTitle.textContent = tags.title; s.displayTitle = tags.title; }
-
-                    // Album + year meta row
-                    var album = tags.album || '';
-                    var year  = tags.year  || '';
-                    songAlbumEl.textContent = album;
-                    songYearEl.textContent  = year;
-                    songYearSep.style.display  = year  ? '' : 'none';
-                    songPlSep.style.display    = (album || year) ? '' : 'none';
-                    if (album || year) metaRow.style.display = 'flex';
-
-                    // Embedded lyrics: try SYLT (synced) first, then USLT (unsynced)
-                    var sylt = tags.SYLT || (tags.raw && tags.raw.SYLT);
-                    var uslt = tags.USLT || (tags.raw && tags.raw.USLT);
-
-                    if (sylt && sylt.data && sylt.data.length) {
-                        // SYLT: array of [text, timestamp_ms]
-                        lyricsCont.innerHTML = '';
-                        currentLyrics = [];
-                        sylt.data.forEach(function(entry) {
-                            var txt  = entry[0] ? entry[0].trim() : '';
-                            var time = entry[1] / 1000; // ms → seconds
-                            if (!txt) return;
-                            var p = document.createElement('div');
-                            p.className = 'lyric-line'; p.textContent = txt;
-                            lyricsCont.appendChild(p);
-                            currentLyrics.push({ time: time, el: p });
-                        });
-                        if (!currentLyrics.length) tryLrcFallback(s);
-                    } else if (uslt && uslt.lyrics) {
-                        // USLT: plain text lyrics, display as static lines
-                        lyricsCont.innerHTML = '';
-                        currentLyrics = [];
-                        uslt.lyrics.split(/\r?\n/).forEach(function(line) {
-                            if (!line.trim()) return;
-                            var p = document.createElement('div');
-                            p.className = 'lyric-line'; p.style.opacity = '0.7'; p.textContent = line;
-                            lyricsCont.appendChild(p);
-                        });
-                        if (!lyricsCont.children.length) tryLrcFallback(s);
-                    } else {
-                        tryLrcFallback(s);
-                    }
-                },
-                onError: function() { tryLrcFallback(s); }
-            });
-        } else {
-            tryLrcFallback(s);
-        }
-
-        clickSound(800);
-    }
-
-    function tryLrcFallback(s) {
         if (s.lrc) {
             fetchTimeout(RAW_BASE + s.playlist + '/' + s.lrc, 5000)
                 .then(function(r) { return r.text(); }).then(parseLrc).catch(noLyrics);
         } else { noLyrics(); }
+        clickSound(800);
     }
 
     function noLyrics() { lyricsCont.innerHTML = '<div class="no-lyrics-msg">No lyrics available</div>'; }
@@ -855,56 +718,35 @@ document.addEventListener('DOMContentLoaded', function() {
         var pool = contextSongs().filter(function(s) { return songs.indexOf(s) !== currentIndex; });
         if (!pool.length) pool = contextSongs();
         if (!pool.length) return;
-
         var picked;
         if (algoMode) {
-            // Weighted random: each song's weight = playCount + 1 (so unplayed songs still have a chance)
             var weights = pool.map(function(s) { return getPlayCount(s.key) + 1; });
             var total   = weights.reduce(function(a, b) { return a + b; }, 0);
-            var rand    = Math.random() * total;
-            var cumul   = 0;
-            for (var i = 0; i < pool.length; i++) {
-                cumul += weights[i];
-                if (rand <= cumul) { picked = pool[i]; break; }
-            }
+            var rand    = Math.random() * total, cumul = 0;
+            for (var i = 0; i < pool.length; i++) { cumul += weights[i]; if (rand <= cumul) { picked = pool[i]; break; } }
             if (!picked) picked = pool[pool.length - 1];
         } else {
             picked = pool[Math.floor(Math.random() * pool.length)];
         }
-
         loadSong(songs.indexOf(picked));
     }
 
     function playNext() {
         var pool = contextSongs();
         if (!pool.length) { setPlayState(false); return; }
-        var curInPool = pool.findIndex(function(s) { return songs.indexOf(s) === currentIndex; });
-        if (curInPool < pool.length - 1) {
-            loadSong(songs.indexOf(pool[curInPool + 1]));
-        } else {
-            setPlayState(false);
-        }
+        var cur = pool.findIndex(function(s) { return songs.indexOf(s) === currentIndex; });
+        if (cur < pool.length - 1) loadSong(songs.indexOf(pool[cur + 1]));
+        else setPlayState(false);
     }
 
-    // ── Library controls ──
-    searchInput.addEventListener('input', function() {
-        searchQuery = this.value.trim();
-        renderLibrary();
-    });
+    searchInput.addEventListener('input', function() { searchQuery = this.value.trim(); renderLibrary(); });
 
-    algoBtn.onclick = function() {
-        algoMode = !algoMode;
-        algoBtn.classList.toggle('active', algoMode);
-        renderLibrary();
-        clickSound(algoMode ? 600 : 300);
-    };
+    algoBtn.onclick = function() { algoMode = !algoMode; algoBtn.classList.toggle('active', algoMode); renderLibrary(); clickSound(algoMode ? 600 : 300); };
 
-    // ── Player controls ──
     randomBtn.onpointerdown = function() {
         longPress = false;
         holdTimer = setTimeout(function() {
-            longPress = true;
-            isRandom = !isRandom;
+            longPress = true; isRandom = !isRandom;
             if (isRandom) { isRepeat = false; repeatBtn.classList.remove('active-state'); }
             randomBtn.classList.toggle('active-state', isRandom);
             diceIcon.classList.add('vibrate-icon');
@@ -940,8 +782,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var ex = musicPlayer.classList.toggle('is-expanded');
         toggleMenu.classList.toggle('active-state', ex); clickSound(ex ? 500 : 300);
     };
-
-
     playPauseBtn.onclick = function(e) {
         e.stopPropagation();
         if (!audio.src && songs.length) { isRandom ? playRandom() : loadSong(0); return; }
@@ -984,5 +824,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 }); // end DOMContentLoaded
 </script>
+
 </body>
 </html>
