@@ -470,21 +470,24 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // ── View Counter (counterapi.dev — once per browser) ──
-    var vcEl        = document.getElementById('view-count');
-    var SEEN_KEY    = 'raeist_seen';
-    var alreadySeen = localStorage.getItem(SEEN_KEY);
-    var endpoint    = alreadySeen
-        ? 'https://api.counterapi.dev/v1/raeist-user/pageviews/get'
-        : 'https://api.counterapi.dev/v1/raeist-user/pageviews/up';
+    var vcEl     = document.getElementById('view-count');
+    var SEEN_KEY = 'raeist_seen';
+    var stored   = localStorage.getItem(SEEN_KEY);
 
-    fetch(endpoint)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (data.count !== undefined) {
-                vcEl.textContent = data.count.toLocaleString();
-                if (!alreadySeen) localStorage.setItem(SEEN_KEY, '1');
-            } else vcEl.textContent = '—';
-        }).catch(function() { vcEl.textContent = '—'; });
+    if (stored) {
+        // Already counted — just show saved count
+        vcEl.textContent = parseInt(stored).toLocaleString();
+    } else {
+        // First visit — increment and save result
+        fetch('https://api.counterapi.dev/v1/raeist-user/pageviews/up')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.count !== undefined) {
+                    vcEl.textContent = data.count.toLocaleString();
+                    localStorage.setItem(SEEN_KEY, data.count);
+                } else vcEl.textContent = '—';
+            }).catch(function() { vcEl.textContent = '—'; });
+    }
 
     // ── Play Frequency Store ──
     var PLAYS_KEY = 'raeist_plays';
