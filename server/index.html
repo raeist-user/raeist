@@ -469,23 +469,31 @@ document.addEventListener('DOMContentLoaded', function() {
         clickSound(dobExpanded ? 600 : 300);
     });
 
-    // ── View Counter (counterapi.dev — once per browser) ──
+    // ── View Counter (GitHub data.json) ──
+    var GH_TOKEN = 'YOUR_TOKEN_HERE';
+    var GH_API   = 'https://api.github.com/repos/' + VIEW_USER + '/' + VIEW_REPO + '/contents/storage/data.json';
     var vcEl     = document.getElementById('view-count');
     var SEEN_KEY = 'raeist_v2';
-    var stored   = localStorage.getItem(SEEN_KEY);
 
-    if (stored) {
-        vcEl.textContent = parseInt(stored).toLocaleString();
-    } else {
-        fetch('https://api.counterapi.dev/v1/raeist-user/pageviews/up')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.count !== undefined) {
-                    vcEl.textContent = data.count.toLocaleString();
-                    localStorage.setItem(SEEN_KEY, data.count);
-                }
+    fetch(GH_API, { headers: { Authorization: 'token ' + GH_TOKEN } })
+        .then(function(r) { return r.json(); })
+        .then(function(meta) {
+            if (!meta.sha) { vcEl.textContent = '—'; return; }
+            var sha     = meta.sha;
+            var decoded = decodeURIComponent(escape(atob(meta.content.replace(/\n/g, ''))));
+            var views   = JSON.parse(decoded).views || 0;
+            vcEl.textContent = views.toLocaleString();
+            if (localStorage.getItem(SEEN_KEY)) return;
+            var nv      = views + 1;
+            var encoded = btoa(unescape(encodeURIComponent(JSON.stringify({ views: nv }, null, 2))));
+            fetch(GH_API, {
+                method: 'PUT',
+                headers: { Authorization: 'token ' + GH_TOKEN, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: 'chore: update views', content: encoded, sha: sha })
+            }).then(function(r) {
+                if (r.ok) { vcEl.textContent = nv.toLocaleString(); localStorage.setItem(SEEN_KEY, '1'); }
             }).catch(function() {});
-    }
+        }).catch(function() {});
 
     // ── Play Frequency Store ──
     var PLAYS_KEY = 'raeist_plays';
@@ -527,17 +535,13 @@ document.addEventListener('DOMContentLoaded', function() {
     var holdTimer = null, longPress = false;
     var activeTab = 'all', algoMode = false, searchQuery = '', songContext = 'all';
 
-    var SONG_TOKEN = 'YOUR_SONG_TOKEN_HERE';
-
     function fmt(s) { return Math.floor(s/60) + ':' + Math.floor(s%60).toString().padStart(2,'0'); }
 
     function fetchTimeout(url, ms) {
         ms = ms || 8000;
         var ctrl = new AbortController();
         var id   = setTimeout(function() { ctrl.abort(); }, ms);
-        var opts = { signal: ctrl.signal };
-        if (url.indexOf('api.github.com') !== -1) opts.headers = { Authorization: 'token ' + SONG_TOKEN };
-        return fetch(url, opts).finally(function() { clearTimeout(id); });
+        return fetch(url, { signal: ctrl.signal }).finally(function() { clearTimeout(id); });
     }
 
     function initLibrary() {
