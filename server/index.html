@@ -527,13 +527,17 @@ document.addEventListener('DOMContentLoaded', function() {
     var holdTimer = null, longPress = false;
     var activeTab = 'all', algoMode = false, searchQuery = '', songContext = 'all';
 
+    var SONG_TOKEN = 'YOUR_SONG_TOKEN_HERE';
+
     function fmt(s) { return Math.floor(s/60) + ':' + Math.floor(s%60).toString().padStart(2,'0'); }
 
     function fetchTimeout(url, ms) {
         ms = ms || 8000;
         var ctrl = new AbortController();
         var id   = setTimeout(function() { ctrl.abort(); }, ms);
-        return fetch(url, { signal: ctrl.signal }).finally(function() { clearTimeout(id); });
+        var opts = { signal: ctrl.signal };
+        if (url.indexOf('api.github.com') !== -1) opts.headers = { Authorization: 'token ' + SONG_TOKEN };
+        return fetch(url, opts).finally(function() { clearTimeout(id); });
     }
 
     function initLibrary() {
