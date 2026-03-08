@@ -124,7 +124,7 @@ footer { margin-top:32px; color:var(--sub); font-size:.75rem; text-transform:upp
 </head>
 <body id="body" data-palette="monochrome">
 
-    <audio id="main-audio" preload="auto"></audio>
+    <audio id="main-audio" preload="none"></audio>
 
     <header class="top-nav">
         <div class="flex items-center gap-2">
@@ -741,12 +741,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('playlist-overlay').classList.remove('active');
         lyricsCont.innerHTML = ''; currentLyrics = [];
 
-        // Preload next
-        if (currentIndex + 1 < songs.length) {
-            var nxt = songs[currentIndex + 1];
-            var pre = new Audio(); pre.preload = 'auto';
-            pre.src = RAW_BASE + nxt.playlist + '/' + nxt.file;
-        }
+
 
         // Read ID3 tags from MP3
         var metaRow      = document.getElementById('song-meta-row');
@@ -869,7 +864,7 @@ document.addEventListener('DOMContentLoaded', function() {
     audio.onended = function() {
         if (isRepeat) { audio.currentTime = 0; audio.play(); }
         else if (isRandom) playRandom();
-        else playNext();
+        else setPlayState(false);
     };
 
     function contextSongs() {
