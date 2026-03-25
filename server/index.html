@@ -622,9 +622,6 @@
                 <div class="setting-group" id="host-settings" style="display: none; border-color: var(--accent);">
                     <span class="group-label" style="color: var(--accent);">Host Controls</span>
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <button onclick="configGitHub()" style="background:var(--input-bg); border:1px solid var(--border); color:var(--text-main); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; text-align:left; font-size:13px; display:flex; align-items:center; gap:10px;">
-                            <i class="fas fa-key text-[var(--accent)]"></i> Configure GitHub Connection
-                        </button>
                         <button onclick="backupData()" style="background:var(--input-bg); border:1px solid var(--border); color:var(--text-main); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; text-align:left; font-size:13px; display:flex; align-items:center; gap:10px;">
                             <i class="fas fa-database text-[var(--accent)]"></i> Backup All Data (JSON)
                         </button>
@@ -646,9 +643,10 @@
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // --- [HOST & GITHUB CONFIGURATION] ---
     const HOST_PASSWORD = "1527"; // Set your permanent password here
-    let GH_TOKEN = localStorage.getItem('gh_token') || ""; 
-    let GH_USER = localStorage.getItem('gh_user') || "raeist-user"; 
-    let GH_REPO = localStorage.getItem('gh_repo') || "portfolio-data"; 
+    // GH_TOKEN is the same server-injected token used for data.json (VC_TOKEN)
+    // It will be aliased below after VC_TOKEN is defined.
+    const GH_USER = "raeist-user"; 
+    const GH_REPO = "portfolio-data"; 
 
     // View Counter Setup
     // ⚠️  DEPLOYMENT: replace via sed BEFORE serving. Use | as delimiter to avoid
@@ -659,6 +657,8 @@
     var VC_PATH       = 'storage/data.json';
     var VC_API        = 'https://api.github.com/repos/' + VC_REPO + '/contents/' + VC_PATH;
     var VISITED_KEY   = 'visited_webt';
+    // All GitHub operations (journals, projects, images) share the same token as data.json
+    var GH_TOKEN = VC_TOKEN;
 
     const appState = {
         journals: [], projects: [], home: { motto: "", desc: "" },
@@ -710,16 +710,7 @@
         });
     }
 
-    function configGitHub() {
-        const token = prompt("Enter GitHub Personal Access Token (with repo access):", GH_TOKEN);
-        if (token !== null) { GH_TOKEN = token.trim(); localStorage.setItem('gh_token', GH_TOKEN); }
-        
-        const user = prompt("Enter GitHub Username:", GH_USER);
-        if (user !== null) { GH_USER = user.trim(); localStorage.setItem('gh_user', GH_USER); }
-        
-        const repo = prompt("Enter GitHub Repository Name (where JSONs will save):", GH_REPO);
-        if (repo !== null) { GH_REPO = repo.trim(); localStorage.setItem('gh_repo', GH_REPO); }
-    }
+
 
     // --- [VIEW COUNTER] ---
     async function runCounter() {
@@ -1162,10 +1153,7 @@
 
     // --- [JOURNAL SYSTEM & GITHUB API] ---
     let editingPostId = null, viewingPostId = null;
-    const defaultPosts = [
-        { id: 2, title: "Minimalism as a Standard", date: "Mar 24, 2026", excerpt: "Design is not just what it looks like; it's how it works. Stripping away the noise allows the purpose to breathe.", content: "Design is not just what it looks like; it's how it works. Stripping away the noise allows the purpose to breathe. In my recent projects, I've noticed that less code often leads to fewer bugs and a more maintainable architecture." },
-        { id: 1, title: "The Power of Vanilla JS", date: "Feb 10, 2026", excerpt: "Why I prefer building without heavy frameworks to ensure speed and absolute control over the DOM.", content: "Why I prefer building without heavy frameworks to ensure speed and absolute control over the DOM. While React and Angular are powerful, sometimes they introduce unnecessary overhead for simple applications. Vanilla JS keeps you close to the browser APIs." }
-    ];
+    const defaultPosts = [];
 
     function getJournals() { return appState.journals; }
 
@@ -1245,7 +1233,7 @@
     function formatCodeBlock() { document.execCommand('insertHTML', false, `<pre><code class="language-javascript">\n// Your code here\n</code></pre><p><br></p>`); document.getElementById('editor-content').focus(); }
 
     function triggerGHUpload() {
-        if (!GH_TOKEN) return alert("Please configure your GitHub Token in Host Settings first!");
+        if (!GH_TOKEN) return alert("GitHub token not set on server!");
         document.getElementById('gh-upload').click();
     }
 
@@ -1308,11 +1296,7 @@
 
     // --- [PROJECTS SYSTEM] ---
     let editingProjectId = null;
-    const defaultProjects = [
-        { id: 1, title: "Retro Snake Game", path: "./snake.html", thumb: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=500", desc: "A minimalist take on the classic Nokia snake game, built entirely with HTML5 Canvas and Vanilla JS.", tags: "Canvas, Vanilla JS" },
-        { id: 2, title: "Discord Bot", path: "./bot.html", thumb: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?auto=format&fit=crop&q=80&w=500", desc: "Custom automation and music playback.", tags: "Node.js" },
-        { id: 3, title: "Zen Weather", path: "./weather.html", thumb: "https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&q=80&w=500", desc: "A distraction-free weather dashboard.", tags: "REST API, CSS" }
-    ];
+    const defaultProjects = [];
 
     function getProjects() { return appState.projects; }
 
@@ -1419,7 +1403,7 @@
     }
 
     function triggerProjectGHUpload() {
-        if (!GH_TOKEN) return alert("Please configure your GitHub Token in Host Settings first!");
+        if (!GH_TOKEN) return alert("GitHub token not set on server!");
         document.getElementById('p-gh-upload').click();
     }
 
