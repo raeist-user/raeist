@@ -678,7 +678,12 @@
     }
 
     async function saveGH(path, content, msg, sha) {
-        if (!GH_TOKEN) { alert("GitHub Token missing! Configure in Settings."); return null; }
+        if (!GH_TOKEN) { alert("GitHub Token not set on server."); return null; }
+        // If no SHA cached, try fetching the file first to get its current SHA
+        if (!sha) {
+            const existing = await fetchGH(path);
+            if (existing) sha = existing.sha;
+        }
         const body = { message: msg, content: encodeB64(content), branch: "main" };
         if (sha) body.sha = sha;
         try {
