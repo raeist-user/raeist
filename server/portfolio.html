@@ -24,7 +24,7 @@
     <style>
         /* --- [PURE CSS: DESIGN TOKENS] --- */
         :root {
-            --accent: #f97316;
+            --accent: #8b5cf6;
             --bg: #121212;
             --nav-bg: rgba(26, 26, 26, 0.85);
             --card-bg: #1c1c1c;
@@ -74,6 +74,14 @@
         .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--text-main); color: var(--bg); padding: 12px 24px; border-radius: 20px; font-size: 14px; font-weight: 700; z-index: 10000; transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 10px 30px rgba(0,0,0,0.2); pointer-events: none; }
         .toast.show { bottom: 100px; }
 
+        /* --- [HOST STATS PILL HOVER] --- */
+        .host-hover-enabled { cursor: pointer; }
+        @media (hover: hover) {
+            .host-hover-enabled:hover { border-color: var(--accent) !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .host-hover-enabled:hover i { color: var(--accent) !important; }
+        }
+        .host-hover-enabled:active { transform: translateY(0) scale(0.95); }
+
         /* --- [HOME UI & SOCIAL BENTO] --- */
         .logo-block { width: 56px; height: 56px; background: var(--accent); border-radius: 18px; display: flex; align-items: center; justify-content: center; color: var(--bg); font-weight: 900; font-size: 26px; margin-bottom: 32px; box-shadow: 0 14px 24px -10px var(--accent); transition: all var(--transition); user-select: none; cursor: pointer; }
         .hero-title { font-size: 28px; font-weight: 900; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 16px; outline: none; }
@@ -103,6 +111,35 @@
 
         .delay-1 { animation-delay: 0.1s; } .delay-2 { animation-delay: 0.2s; } .delay-3 { animation-delay: 0.3s; } .delay-4 { animation-delay: 0.4s; } .delay-5 { animation-delay: 0.5s; }
         @keyframes bentoSlideIn { to { opacity: 1; transform: translateY(0); } }
+
+        /* --- [PROJECTS TAB UI] --- */
+        .project-grid { display: flex; flex-direction: column; gap: 24px; margin-top: 24px; position: relative; z-index: 1; }
+        .project-card {
+            background: var(--glass-bg); border: 1px solid var(--border); border-radius: 24px; padding: 24px;
+            display: flex; flex-direction: column; gap: 12px; text-decoration: none; width: 100%;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
+        }
+        .project-title-row { display: flex; align-items: center; justify-content: space-between; }
+        .project-title { font-size: 22px; font-weight: 800; color: var(--text-main); line-height: 1.2; letter-spacing: -0.02em; }
+        .project-arrow { color: var(--accent); opacity: 0; transform: translateX(-15px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 18px; }
+        
+        .project-desc { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+        .project-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 8px; }
+        .p-tag { font-size: 10px; font-weight: 800; padding: 6px 10px; border-radius: 8px; background: rgba(128,128,128,0.1); color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        .project-thumb-wrapper { width: 100%; height: 200px; border-radius: 12px; overflow: hidden; margin-bottom: 12px; border: 1px solid var(--border); background: rgba(128,128,128,0.1); }
+        .project-thumbnail { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        @media (hover: hover) {
+            .project-card:not(.host-mode):hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 14px 28px rgba(0,0,0,0.15); }
+            .project-card:not(.host-mode):hover .project-thumbnail { transform: scale(1.05); }
+            .project-card:not(.host-mode):hover .project-arrow { opacity: 1; transform: translateX(0); }
+        }
+        .project-card:not(.host-mode):active { transform: scale(0.96); border-color: var(--accent); }
+        .project-card:not(.host-mode):active .project-thumbnail { transform: scale(1.02); }
+        .project-card:not(.host-mode):active .project-arrow { opacity: 1; transform: translateX(0); }
+        .project-card.host-mode { cursor: default; }
 
         /* --- [MUSIC PLAYER & ZEN MODE] --- */
         .player-wrapper-font { font-family: 'Space Grotesk', sans-serif; }
@@ -255,7 +292,10 @@
         .auth-btn { width: 100%; background: var(--accent); color: var(--bg); border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; }
         .auth-cancel-btn { margin-top: 16px; background: transparent; border: none; color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; cursor: pointer; transition: color var(--transition); }
 
-        /* --- [EDITOR] --- */
+        /* --- [EDITOR & FORMS] --- */
+        .form-input { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: var(--text-main); font-family: inherit; font-size: 15px; margin-bottom: 16px; outline: none; transition: border var(--transition); }
+        .form-input:focus { border-color: var(--accent); }
+        
         .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .editor-title { width: 100%; font-size: 28px; font-weight: 800; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text-main); padding-bottom: 8px; margin-bottom: 16px; font-family: inherit; }
         .editor-toolbar { display: flex; gap: 8px; padding: 12px; background: var(--input-bg); border-radius: 12px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
@@ -270,6 +310,9 @@
         .post-view-date { font-size: 12px; color: var(--accent); text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; display: block; margin-bottom: 32px; }
         .post-view-content { font-size: 16px; line-height: 1.8; color: var(--text-dim); padding-bottom: 40px; }
         .post-view-content pre { border-radius: 12px; margin: 16px 0; font-size: 13px; }
+
+        .host-proj-actions { display: none; position: absolute; top: 12px; right: 12px; gap: 8px; z-index: 10; }
+        .host-proj-actions button { background: var(--nav-bg); border: 1px solid var(--border); border-radius: 50%; width: 32px; height: 32px; color: var(--text-main); cursor: pointer; backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; }
 
         /* --- [FOOTER NAV] --- */
         footer { 
@@ -289,6 +332,29 @@
 </head>
 <body class="transition-colors duration-300">
 
+    <!-- Dynamic Background Canvas -->
+    <canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -999; pointer-events: none; opacity: 0.4;"></canvas>
+
+    <!-- Stats Modal -->
+    <div class="auth-overlay" id="stats-overlay" onclick="if(event.target === this) this.classList.remove('active')">
+        <div class="auth-modal">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-[0.7rem] uppercase opacity-50 font-bold tracking-widest">Traffic Stats</span>
+                <button onclick="document.getElementById('stats-overlay').classList.remove('active')" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px;"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; text-align:left;">
+                <div style="background:var(--input-bg); border:1px solid var(--border); border-radius:16px; padding:20px;">
+                    <span style="font-size:10px; text-transform:uppercase; font-weight:900; color:var(--text-dim); letter-spacing:0.1em; display:block; margin-bottom:8px;">Total Unique Visitors</span>
+                    <div id="stat-total" style="font-size:32px; font-weight:900; color:var(--accent); line-height:1;">...</div>
+                </div>
+                <div style="background:var(--input-bg); border:1px solid var(--border); border-radius:16px; padding:20px;">
+                    <span style="font-size:10px; text-transform:uppercase; font-weight:900; color:var(--text-dim); letter-spacing:0.1em; display:block; margin-bottom:8px;">Frequent Visitors</span>
+                    <div id="stat-freq" style="font-size:32px; font-weight:900; color:var(--text-main); line-height:1;">...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="reading-progress"></div>
     <div id="toast" class="toast">Action completed!</div>
     <div class="playlist-popover" id="playlist-popover"></div>
@@ -303,23 +369,33 @@
         </div>
     </div>
 
-    <!-- Hidden file input for ImgBB -->
-    <input type="file" id="imgbb-upload" accept="image/*" style="display:none">
+    <!-- Hidden file inputs for GitHub Upload -->
+    <input type="file" id="gh-upload" accept="image/*" style="display:none">
+    <input type="file" id="p-gh-upload" accept="image/*" style="display:none">
 
     <div id="app">
         <!-- View: Home -->
         <div id="view-home" class="view-section active">
-            <div class="container" style="display:flex; flex-direction:column; justify-content:center; min-height:80vh; text-align:center;">
+            <div class="container" style="display:flex; flex-direction:column; justify-content:center; min-height:80vh; text-align:center; position:relative;">
                 
+                <!-- Fixed In-Page Stats Pill (Top Left) -->
+                <div id="home-stats-pill" style="position: absolute; top: 24px; left: 24px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 20px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: all var(--transition);" onclick="if(isHost) { document.getElementById('stats-overlay').classList.add('active'); clickSound(400); }">
+                    <i class="far fa-eye" style="font-size: 12px; color: var(--text-dim); transition: color var(--transition);"></i>
+                    <span id="view-count" style="font-size: 12px; font-weight: 800; letter-spacing: 0.05em; color: var(--text-main);">...</span>
+                </div>
+
                 <div class="logo-block mx-auto" id="home-logo" onclick="handleLogoClick()">Ræ</div>
                 <h2 class="text-2xl font-bold mt-2 mb-6" style="letter-spacing:-0.02em;"><span style="color:var(--accent); transition:color var(--transition);">Adnan</span> nafees</h2>
                 <h1 class="hero-title" id="home-motto">Simplicity is the<br/><span style="color:var(--accent); transition:color var(--transition);">Ultimate</span> Sophistication.</h1>
                 <p class="hero-desc" id="home-desc" style="color:var(--text-dim); max-width:80%; margin: 0 auto;">Building digital logic into aesthetic experiences.</p>
                 
-                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin: 16px auto 0; padding: 6px 14px; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 20px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); width: fit-content;">
-                    <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulseDot 2s infinite;"></div>
-                    <span id="bihar-time" style="font-size: 12px; font-weight: 700; letter-spacing: 0.05em; color: var(--text-main);">--:--:--</span>
-                    <span style="font-size: 10px; font-weight: 900; letter-spacing: 0.1em; opacity: 0.5; color: var(--text-dim);">BIHAR</span>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin: 16px auto 0; flex-wrap: wrap;">
+                    <!-- Time Pill -->
+                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--glass-bg); border: 1px solid var(--border); border-radius: 20px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                        <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulseDot 2s infinite;"></div>
+                        <span id="bihar-time" style="font-size: 12px; font-weight: 700; letter-spacing: 0.05em; color: var(--text-main);">--:--:--</span>
+                        <span style="font-size: 10px; font-weight: 900; letter-spacing: 0.1em; opacity: 0.5; color: var(--text-dim);">BIHAR</span>
+                    </div>
                 </div>
 
                 <div class="social-bento">
@@ -330,11 +406,49 @@
                     <a href="https://discord.gg/8vdkmKmm" target="_blank" class="bento-item delay-2"><i class="fab fa-discord"></i><span>Discord</span></a>
                     <a href="https://open.spotify.com/user/31ajwponuh7kzf6x4gieqhoygmym" target="_blank" class="bento-item delay-3"><i class="fab fa-spotify"></i><span>Spotify</span></a>
                     <a href="https://www.pinterest.com/realraeist" target="_blank" class="bento-item delay-4"><i class="fab fa-pinterest"></i><span>Pinterest</span></a>
-                    <a href="mailto:imadnannafees@gmail.com" class="bento-item wide delay-5"><i class="fas fa-envelope"></i><span>imadnannafees@gmail.com</span></a>
+                    <a href="/cdn-cgi/l/email-protection#234a4e42474d424d4d424546465063444e424a4f0d404c4e" class="bento-item wide delay-5"><i class="fas fa-envelope"></i><span><span class="__cf_email__" data-cfemail="771e1a161319161919161112120437101a161e1b5914181a">[email&#160;protected]</span></span></a>
                 </div>
 
                 <div id="host-home-actions" style="display: none; justify-content: center; margin-top: 20px;">
                     <button id="edit-home-btn" onclick="toggleHomeEdit()" style="background:var(--input-bg); border:1px solid var(--border); color:var(--text-main); padding:8px 20px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:12px;"><i class="fas fa-edit"></i> Edit Intro</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Projects -->
+        <div id="view-projects" class="view-section">
+            <div class="container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h2 style="font-size:32px; font-weight:900; margin-bottom:0; letter-spacing:-0.02em;">Projects</h2>
+                    <button class="host-post-btn" id="fab-project-create" onclick="openProjectEditor()"><i class="fas fa-plus"></i> Add</button>
+                </div>
+                <p style="color:var(--text-dim); font-size:14px; margin-bottom:24px;">Experiments and fun builds.</p>
+                
+                <div class="project-grid" id="project-list-container">
+                    <!-- Dynamic Projects Load Here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Project Editor -->
+        <div id="view-project-editor" class="view-section">
+            <div class="container">
+                <div class="editor-header">
+                    <button class="post-back" onclick="setView('projects')"><i class="fas fa-arrow-left"></i></button>
+                    <button onclick="saveProjectData()" style="background:var(--accent); color:var(--bg); border:none; padding:8px 20px; border-radius:12px; font-weight:bold; cursor:pointer;">Publish</button>
+                </div>
+                <h1 class="text-2xl font-bold mb-6">Edit Project</h1>
+                <div style="display:flex; flex-direction:column;">
+                    <input type="text" id="p-edit-title" class="form-input" placeholder="Project Title (e.g., Retro Snake)">
+                    <input type="text" id="p-edit-path" class="form-input" placeholder="HTML File Path (e.g., ./snake.html)">
+                    
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="p-edit-thumb" class="form-input" placeholder="Thumbnail Image URL" style="flex:1; margin-bottom:16px;">
+                        <button onclick="triggerProjectGHUpload()" id="btn-p-img-upload" style="background:var(--input-bg); border:1px solid var(--border); border-radius:12px; padding:0 16px; color:var(--text-dim); height: 48px; cursor: pointer; transition: 0.2s;"><i class="fas fa-image"></i></button>
+                    </div>
+                    
+                    <textarea id="p-edit-desc" class="form-input" placeholder="Short description..." style="min-height:100px; resize:vertical;"></textarea>
+                    <input type="text" id="p-edit-tags" class="form-input" placeholder="Tags (comma separated, e.g., Canvas, Vanilla JS)">
                 </div>
             </div>
         </div>
@@ -390,7 +504,7 @@
                         </div>
                     </div>
                     
-                    <!-- Zen Mode Focus Timer (FIXED INPUTS & CARD BORDER) -->
+                    <!-- Zen Mode Focus Timer -->
                     <div class="zen-timer-wrapper">
                         <div class="zen-timer-display-wrapper">
                             <div class="zen-timer-input-group">
@@ -424,7 +538,6 @@
                             </div>
                         </div>
                         
-                        <!-- Fixed Search Row -->
                         <div class="flex items-center gap-2 w-full mb-4">
                             <div class="lib-search-wrap" style="min-width: 0;">
                                 <i class="fas fa-search"></i>
@@ -464,7 +577,7 @@
                     <button class="tool-btn" onclick="formatText('italic')"><i class="fas fa-italic"></i></button>
                     <button class="tool-btn" onclick="formatText('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
                     <button class="tool-btn" onclick="formatLink()"><i class="fas fa-link"></i></button>
-                    <button class="tool-btn" onclick="triggerImgBB()" id="btn-img-upload"><i class="fas fa-image"></i></button>
+                    <button class="tool-btn" onclick="triggerGHUpload()" id="btn-img-upload"><i class="fas fa-image"></i></button>
                     <button class="tool-btn" onclick="formatCodeBlock()"><i class="fas fa-code"></i></button>
                 </div>
                 <div id="editor-content" class="editor-content" contenteditable="true" data-placeholder="Start typing your thoughts..."></div>
@@ -509,8 +622,8 @@
                 <div class="setting-group" id="host-settings" style="display: none; border-color: var(--accent);">
                     <span class="group-label" style="color: var(--accent);">Host Controls</span>
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <button onclick="setImgBBApiKey()" style="background:var(--input-bg); border:1px solid var(--border); color:var(--text-main); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; text-align:left; font-size:13px; display:flex; align-items:center; gap:10px;">
-                            <i class="fas fa-key text-[var(--accent)]"></i> Configure ImgBB API Key
+                        <button onclick="configGitHub()" style="background:var(--input-bg); border:1px solid var(--border); color:var(--text-main); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; text-align:left; font-size:13px; display:flex; align-items:center; gap:10px;">
+                            <i class="fas fa-key text-[var(--accent)]"></i> Configure GitHub Connection
                         </button>
                         <button onclick="backupData()" style="background:var(--input-bg); border:1px solid var(--border); color:var(--text-main); padding:12px; border-radius:12px; font-weight:bold; cursor:pointer; text-align:left; font-size:13px; display:flex; align-items:center; gap:10px;">
                             <i class="fas fa-database text-[var(--accent)]"></i> Backup All Data (JSON)
@@ -523,13 +636,152 @@
         <!-- Footer -->
         <footer>
             <button class="nav-icon active" onclick="setView('home')" id="nav-home"><i class="fas fa-home"></i></button>
+            <button class="nav-icon" onclick="setView('projects')" id="nav-projects"><i class="fas fa-layer-group"></i></button>
             <button class="nav-icon" onclick="setView('music')" id="nav-music"><i class="fas fa-music"></i></button>
             <button class="nav-icon" onclick="setView('blog')" id="nav-blog"><i class="fas fa-book"></i></button>
             <button class="nav-icon" onclick="setView('settings')" id="nav-settings"><i class="fas fa-sliders-h"></i></button>
         </footer>
     </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // --- [HOST & GITHUB CONFIGURATION] ---
+    const HOST_PASSWORD = "1527"; // Set your permanent password here
+    let GH_TOKEN = localStorage.getItem('gh_token') || ""; 
+    let GH_USER = localStorage.getItem('gh_user') || "raeist-user"; 
+    let GH_REPO = localStorage.getItem('gh_repo') || "portfolio-data"; 
+
+    // View Counter Setup
+    var VC_TOKEN      = 'YOUR_GITHUB_TOKEN'; // User Requested Fallback Format
+    var VC_REPO       = 'raeist-user/raeist';
+    var VC_PATH       = 'storage/data.json';
+    var VC_API        = 'https://api.github.com/repos/' + VC_REPO + '/contents/' + VC_PATH;
+    var VISITED_KEY   = 'visited_webt';
+
+    const appState = {
+        journals: [], projects: [], home: { motto: "", desc: "" },
+        shas: { journal: null, projects: null, home: null }
+    };
+
+    function encodeB64(str) { return btoa(unescape(encodeURIComponent(str))); }
+    function decodeB64(str) { return decodeURIComponent(escape(atob(str))); }
+
+    async function fetchGH(path) {
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${path}`, { headers: GH_TOKEN ? { "Authorization": `token ${GH_TOKEN}` } : {} });
+            if (res.ok) { const d = await res.json(); return { content: decodeB64(d.content), sha: d.sha }; }
+            return null;
+        } catch(e) { return null; }
+    }
+
+    async function saveGH(path, content, msg, sha) {
+        if (!GH_TOKEN) { alert("GitHub Token missing! Configure in Settings."); return null; }
+        const body = { message: msg, content: encodeB64(content), branch: "main" };
+        if (sha) body.sha = sha;
+        try {
+            const res = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${path}`, {
+                method: "PUT", headers: { "Authorization": `token ${GH_TOKEN}`, "Content-Type": "application/json" }, body: JSON.stringify(body)
+            });
+            if (res.ok) { const d = await res.json(); return d.content.sha; }
+            else { const err = await res.json(); alert("Save Error: " + err.message); return null; }
+        } catch(e) { alert("Network Error"); return null; }
+    }
+
+    async function uploadImageGH(file) {
+        if (!GH_TOKEN) { alert("GitHub Token missing!"); return null; }
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const b64 = e.target.result.split(',')[1];
+                const ext = file.name.split('.').pop() || 'png';
+                const path = `storage/images/${Date.now()}.${ext}`;
+                const body = { message: `Upload image ${file.name}`, content: b64, branch: "main" };
+                try {
+                    const res = await fetch(`https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/${path}`, {
+                        method: "PUT", headers: { "Authorization": `token ${GH_TOKEN}`, "Content-Type": "application/json" }, body: JSON.stringify(body)
+                    });
+                    if (res.ok) resolve(`https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/main/${path}`);
+                    else reject("Upload failed");
+                } catch (err) { reject(err); }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function configGitHub() {
+        const token = prompt("Enter GitHub Personal Access Token (with repo access):", GH_TOKEN);
+        if (token !== null) { GH_TOKEN = token.trim(); localStorage.setItem('gh_token', GH_TOKEN); }
+        
+        const user = prompt("Enter GitHub Username:", GH_USER);
+        if (user !== null) { GH_USER = user.trim(); localStorage.setItem('gh_user', GH_USER); }
+        
+        const repo = prompt("Enter GitHub Repository Name (where JSONs will save):", GH_REPO);
+        if (repo !== null) { GH_REPO = repo.trim(); localStorage.setItem('gh_repo', GH_REPO); }
+    }
+
+    // --- [VIEW COUNTER] ---
+    async function runCounter() {
+        var vcEl = document.getElementById('view-count');
+        var statTotal = document.getElementById('stat-total');
+        var statFreq = document.getElementById('stat-freq');
+        
+        try {
+            var isVisited = localStorage.getItem(VISITED_KEY);
+            var isReturned = localStorage.getItem('returned_webt');
+            // Use VC_TOKEN per user request (fallback to GH_TOKEN if VC_TOKEN is placeholder and GH_TOKEN exists)
+            var tokenToUse = (VC_TOKEN === 'YOUR_GITHUB_TOKEN' && GH_TOKEN) ? GH_TOKEN : VC_TOKEN;
+
+            var res = await fetch(VC_API, {
+                headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + tokenToUse }
+            });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+
+            var data = await res.json();
+            // Assign to appState to ensure Host edits don't overwrite stats
+            appState.home = JSON.parse(decodeB64(data.content));
+            appState.shas.home = data.sha;
+            
+            var currentVisitors = appState.home.visitors || 0;
+            var currentFrequent = appState.home.frequent || 0;
+            var needsWrite = false;
+
+            if (!isVisited) {
+                appState.home.visitors = currentVisitors + 1;
+                localStorage.setItem(VISITED_KEY, '1');
+                needsWrite = true;
+            } else if (!isReturned) {
+                appState.home.frequent = currentFrequent + 1;
+                localStorage.setItem('returned_webt', '1');
+                needsWrite = true;
+            }
+
+            if (needsWrite) {
+                var writeRes = await fetch(VC_API, {
+                    method: 'PUT',
+                    headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + tokenToUse, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: 'Update visitor stats',
+                        content: encodeB64(JSON.stringify(appState.home, null, 2)),
+                        sha: appState.shas.home
+                    })
+                });
+                if (writeRes.ok) {
+                    var newDat = await writeRes.json();
+                    appState.shas.home = newDat.content.sha;
+                }
+            }
+
+            if(vcEl) vcEl.textContent = (appState.home.visitors || 0).toLocaleString();
+            if(statTotal) statTotal.textContent = (appState.home.visitors || 0).toLocaleString();
+            if(statFreq) statFreq.textContent = (appState.home.frequent || 0).toLocaleString();
+
+        } catch (err) {
+            if (!appState.home.motto) appState.home = { motto: defaultMottoRaw, desc: defaultDescRaw, visitors: 0, frequent: 0 };
+            if(vcEl) vcEl.textContent = '—';
+            if(statTotal) statTotal.textContent = '—';
+            if(statFreq) statFreq.textContent = '—';
+        }
+    }
+
     // --- [ZEN MODE & TIMER FIXED LOGIC] ---
     window.zenDefaultTime = 25 * 60;
     let zenTimeLeft = window.zenDefaultTime;
@@ -659,7 +911,7 @@
     // --- [THEME LOGIC] ---
     const accents = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444'];
     let currentTheme = localStorage.getItem('savedTheme') || 'dark';
-    let currentAccent = localStorage.getItem('savedAccent') || '#f97316';
+    let currentAccent = localStorage.getItem('savedAccent') || '#8b5cf6'; // Default Purple
 
     function setView(viewId) {
         const updateDOM = () => {
@@ -671,6 +923,8 @@
                 document.getElementById('nav-' + viewId).classList.add('active'); 
             } else if (viewId === 'post' || viewId === 'editor') {
                 document.getElementById('nav-blog').classList.add('active');
+            } else if (viewId === 'project-editor') {
+                document.getElementById('nav-projects').classList.add('active');
             }
             
             window.scrollTo(0,0);
@@ -738,9 +992,17 @@
     function updateHostUI() {
         document.getElementById('host-home-actions').style.display = isHost ? 'flex' : 'none';
         document.getElementById('fab-create').style.display = isHost ? 'flex' : 'none';
+        document.getElementById('fab-project-create').style.display = isHost ? 'flex' : 'none';
         document.getElementById('host-settings').style.display = isHost ? 'block' : 'none';
         if(document.getElementById('host-post-actions')) {
             document.getElementById('host-post-actions').style.display = isHost && document.getElementById('view-post').classList.contains('active') ? 'flex' : 'none';
+        }
+        document.querySelectorAll('.host-proj-actions').forEach(el => el.style.display = isHost ? 'flex' : 'none');
+        
+        const statsPill = document.getElementById('home-stats-pill');
+        if (statsPill) {
+            statsPill.style.cursor = isHost ? 'pointer' : 'default';
+            isHost ? statsPill.classList.add('host-hover-enabled') : statsPill.classList.remove('host-hover-enabled');
         }
     }
 
@@ -757,6 +1019,7 @@
                 isHost = false; 
                 localStorage.setItem('isHost', 'false'); 
                 renderJournals(); 
+                renderProjects();
                 updateHostUI(); 
             }
             logoClicks = 0;
@@ -766,11 +1029,12 @@
     }
 
     function checkHostPass() {
-        if (document.getElementById('host-pass').value === '1527') {
+        if (document.getElementById('host-pass').value === HOST_PASSWORD) {
             isHost = true; 
             localStorage.setItem('isHost', 'true'); 
             document.getElementById('auth-overlay').classList.remove('active'); 
             renderJournals(); 
+            renderProjects();
             updateHostUI(); 
             setView('blog');
         } else { 
@@ -791,11 +1055,11 @@
     }
 
     function loadHomeContent() {
-        document.getElementById('home-motto').innerHTML = parseAccent(localStorage.getItem('raeist_motto_raw') || defaultMottoRaw);
-        document.getElementById('home-desc').innerHTML = parseAccent(localStorage.getItem('raeist_desc_raw') || defaultDescRaw);
+        document.getElementById('home-motto').innerHTML = parseAccent(appState.home.motto || defaultMottoRaw);
+        document.getElementById('home-desc').innerHTML = parseAccent(appState.home.desc || defaultDescRaw);
     }
 
-    function toggleHomeEdit() {
+    async function toggleHomeEdit() {
         isHomeEditing = !isHomeEditing;
         const mottoEl = document.getElementById('home-motto');
         const descEl = document.getElementById('home-desc');
@@ -806,8 +1070,8 @@
             descEl.contentEditable = true; 
             mottoEl.style.borderBottom = '1px dashed var(--border)'; 
             descEl.style.borderBottom = '1px dashed var(--border)';
-            mottoEl.innerText = localStorage.getItem('raeist_motto_raw') || defaultMottoRaw; 
-            descEl.innerText = localStorage.getItem('raeist_desc_raw') || defaultDescRaw; 
+            mottoEl.innerText = appState.home.motto || defaultMottoRaw; 
+            descEl.innerText = appState.home.desc || defaultDescRaw; 
             mottoEl.focus(); 
             btn.innerHTML = '<i class="fas fa-save"></i> Save'; 
             btn.style.color = 'var(--accent)';
@@ -816,24 +1080,31 @@
             descEl.contentEditable = false; 
             mottoEl.style.borderBottom = 'none'; 
             descEl.style.borderBottom = 'none';
-            localStorage.setItem('raeist_motto_raw', mottoEl.innerText); 
-            localStorage.setItem('raeist_desc_raw', descEl.innerText);
+            
+            appState.home.motto = mottoEl.innerText;
+            appState.home.desc = descEl.innerText;
             mottoEl.innerHTML = parseAccent(mottoEl.innerText); 
             descEl.innerHTML = parseAccent(descEl.innerText);
-            btn.innerHTML = '<i class="fas fa-edit"></i> Edit Intro'; 
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; 
             btn.style.color = 'var(--text-main)'; 
+            
+            const newSha = await saveGH('storage/data.json', JSON.stringify(appState.home, null, 2), "Update home content", appState.shas.home);
+            if (newSha) appState.shas.home = newSha;
+
+            btn.innerHTML = '<i class="fas fa-edit"></i> Edit Intro'; 
             clickSound(600);
         }
     }
 
     function backupData() {
         const data = { 
-            journals: JSON.parse(localStorage.getItem('raeist_journals') || '[]'), 
-            motto_raw: localStorage.getItem('raeist_motto_raw') || '', 
-            desc_raw: localStorage.getItem('raeist_desc_raw') || '', 
+            journals: appState.journals, 
+            projects: appState.projects,
+            home: appState.home,
             plays: JSON.parse(localStorage.getItem('raeist_plays') || '{}'), 
             theme: localStorage.getItem('savedTheme') || 'dark', 
-            accent: localStorage.getItem('savedAccent') || '#f97316' 
+            accent: localStorage.getItem('savedAccent') || '#8b5cf6' 
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const a = document.createElement('a'); 
@@ -845,21 +1116,14 @@
         URL.revokeObjectURL(a.href);
     }
 
-    // --- [JOURNAL SYSTEM & IMGBB] ---
+    // --- [JOURNAL SYSTEM & GITHUB API] ---
     let editingPostId = null, viewingPostId = null;
     const defaultPosts = [
         { id: 2, title: "Minimalism as a Standard", date: "Mar 24, 2026", excerpt: "Design is not just what it looks like; it's how it works. Stripping away the noise allows the purpose to breathe.", content: "Design is not just what it looks like; it's how it works. Stripping away the noise allows the purpose to breathe. In my recent projects, I've noticed that less code often leads to fewer bugs and a more maintainable architecture." },
         { id: 1, title: "The Power of Vanilla JS", date: "Feb 10, 2026", excerpt: "Why I prefer building without heavy frameworks to ensure speed and absolute control over the DOM.", content: "Why I prefer building without heavy frameworks to ensure speed and absolute control over the DOM. While React and Angular are powerful, sometimes they introduce unnecessary overhead for simple applications. Vanilla JS keeps you close to the browser APIs." }
     ];
 
-    function getJournals() { 
-        try { 
-            const data = localStorage.getItem('raeist_journals'); 
-            if (data) return JSON.parse(data); 
-            localStorage.setItem('raeist_journals', JSON.stringify(defaultPosts)); 
-            return defaultPosts; 
-        } catch(e) { return defaultPosts; } 
-    }
+    function getJournals() { return appState.journals; }
 
     function renderJournals() {
         const list = document.getElementById('journal-list');
@@ -912,9 +1176,16 @@
     function deleteCurrentPost() { 
         if (!isHost || !viewingPostId) return; 
         if (confirm("Delete this journal entry?")) { 
-            let journals = getJournals().filter(j => j.id !== viewingPostId); 
-            localStorage.setItem('raeist_journals', JSON.stringify(journals)); 
-            setView('blog'); 
+            appState.journals = appState.journals.filter(j => j.id !== viewingPostId); 
+            const btn = document.querySelector('.post-header .fa-trash').parentNode;
+            const oldHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            saveGH('storage/content/journal.json', JSON.stringify(appState.journals, null, 2), "Delete journal entry", appState.shas.journal).then(sha => {
+                if (sha) appState.shas.journal = sha;
+                btn.innerHTML = oldHtml;
+                setView('blog'); 
+            });
         } 
     }
 
@@ -929,54 +1200,41 @@
     function formatLink() { const url = prompt("Enter link URL:", "https://"); if (url) { document.execCommand('createLink', false, url); document.getElementById('editor-content').focus(); } }
     function formatCodeBlock() { document.execCommand('insertHTML', false, `<pre><code class="language-javascript">\n// Your code here\n</code></pre><p><br></p>`); document.getElementById('editor-content').focus(); }
 
-    function setImgBBApiKey() {
-        const key = prompt("Enter your ImgBB API Key (Get a free one at api.imgbb.com):", localStorage.getItem('imgbb_key') || '');
-        if (key) localStorage.setItem('imgbb_key', key.trim());
+    function triggerGHUpload() {
+        if (!GH_TOKEN) return alert("Please configure your GitHub Token in Host Settings first!");
+        document.getElementById('gh-upload').click();
     }
 
-    function triggerImgBB() {
-        if (!localStorage.getItem('imgbb_key')) {
-            alert("Please configure your ImgBB API Key in Host Settings first!");
-            return;
-        }
-        document.getElementById('imgbb-upload').click();
-    }
-
-    document.getElementById('imgbb-upload').addEventListener('change', function() {
+    document.getElementById('gh-upload').addEventListener('change', async function() {
         if (!this.files || !this.files[0]) return;
-        const file = this.files[0];
-        const formData = new FormData();
-        formData.append('image', file);
         
         const btn = document.getElementById('btn-img-upload');
         const oldHtml = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-        fetch('https://api.imgbb.com/1/upload?key=' + localStorage.getItem('imgbb_key'), {
-            method: 'POST', body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) document.execCommand('insertImage', false, data.data.url);
-            else alert("Upload failed: " + (data.error ? data.error.message : 'Unknown error'));
-        })
-        .catch(err => alert("Network error during upload."))
-        .finally(() => {
-            btn.innerHTML = oldHtml;
-            document.getElementById('imgbb-upload').value = '';
-            document.getElementById('editor-content').focus();
-        });
+        try {
+            const url = await uploadImageGH(this.files[0]);
+            if(url) document.execCommand('insertImage', false, url);
+        } catch(err) { alert("Network error during upload."); }
+        
+        btn.innerHTML = oldHtml;
+        this.value = '';
+        document.getElementById('editor-content').focus();
     });
 
-    function saveJournal() {
+    async function saveJournal() {
         const title = document.getElementById('editor-title').value.trim();
         const content = document.getElementById('editor-content').innerHTML.trim();
         const textOnly = document.getElementById('editor-content').innerText.trim();
         
         if (!title || !content) return alert("Title and content cannot be empty.");
         
+        const btn = document.querySelector('.editor-header button:nth-child(2)');
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
         const excerpt = textOnly.length > 100 ? textOnly.substring(0, 100) + '...' : textOnly;
-        let journals = getJournals();
+        let journals = appState.journals;
         
         if (editingPostId) { 
             const idx = journals.findIndex(j => j.id === editingPostId); 
@@ -996,10 +1254,146 @@
             }); 
         }
         
-        localStorage.setItem('raeist_journals', JSON.stringify(journals)); 
+        const sha = await saveGH('storage/content/journal.json', JSON.stringify(journals, null, 2), "Update journal entry", appState.shas.journal);
+        if (sha) appState.shas.journal = sha;
+
+        btn.innerHTML = oldHtml;
         clickSound(600); 
         setView('blog');
     }
+
+    // --- [PROJECTS SYSTEM] ---
+    let editingProjectId = null;
+    const defaultProjects = [
+        { id: 1, title: "Retro Snake Game", path: "./snake.html", thumb: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=500", desc: "A minimalist take on the classic Nokia snake game, built entirely with HTML5 Canvas and Vanilla JS.", tags: "Canvas, Vanilla JS" },
+        { id: 2, title: "Discord Bot", path: "./bot.html", thumb: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?auto=format&fit=crop&q=80&w=500", desc: "Custom automation and music playback.", tags: "Node.js" },
+        { id: 3, title: "Zen Weather", path: "./weather.html", thumb: "https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&q=80&w=500", desc: "A distraction-free weather dashboard.", tags: "REST API, CSS" }
+    ];
+
+    function getProjects() { return appState.projects; }
+
+    function renderProjects() {
+        const list = document.getElementById('project-list-container');
+        const projects = getProjects();
+        
+        list.innerHTML = projects.map((p) => {
+            const tagsHtml = (p.tags || '').split(',').map(t => t.trim()).filter(t => t).map(t => `<span class="p-tag">${t}</span>`).join('');
+            const thumbInner = p.thumb ? `<img src="${p.thumb}" alt="Thumbnail" class="project-thumbnail" loading="lazy">` : `<div class="project-thumbnail flex items-center justify-center text-[var(--text-dim)]"><i class="fas fa-code text-3xl"></i></div>`;
+            const thumbHtml = `<div class="project-thumb-wrapper">${thumbInner}</div>`;
+
+            return `
+            <div class="project-card ${isHost ? 'host-mode' : ''}" style="position: relative;" ${!isHost ? `onclick="window.open('${p.path}', '_blank');"` : ''}>
+                <div class="host-proj-actions" style="display: ${isHost ? 'flex' : 'none'};">
+                    <button onclick="editProject(${p.id}, event)"><i class="fas fa-edit text-xs"></i></button>
+                    <button onclick="deleteProject(${p.id}, event)" style="color:var(--accent);"><i class="fas fa-trash text-xs"></i></button>
+                </div>
+                ${thumbHtml}
+                <div class="project-title-row">
+                    <h3 class="project-title">${p.title}</h3>
+                    ${!isHost ? `<i class="fas fa-arrow-right project-arrow"></i>` : ''}
+                </div>
+                <p class="project-desc">${p.desc}</p>
+                <div class="project-tags">${tagsHtml}</div>
+            </div>`;
+        }).join('');
+        
+        if (list.innerHTML === '') {
+            list.innerHTML = '<div style="opacity:0.3; padding:40px 0; text-align:center;">No projects posted yet.</div>';
+        }
+    }
+
+    function openProjectEditor() {
+        editingProjectId = null;
+        document.getElementById('p-edit-title').value = '';
+        document.getElementById('p-edit-path').value = '';
+        document.getElementById('p-edit-thumb').value = '';
+        document.getElementById('p-edit-desc').value = '';
+        document.getElementById('p-edit-tags').value = '';
+        setView('project-editor');
+    }
+
+    function editProject(id, e) {
+        if(e) { e.stopPropagation(); e.preventDefault(); }
+        const p = getProjects().find(proj => proj.id === id);
+        if (p) {
+            editingProjectId = p.id;
+            document.getElementById('p-edit-title').value = p.title || '';
+            document.getElementById('p-edit-path').value = p.path || '';
+            document.getElementById('p-edit-thumb').value = p.thumb || '';
+            document.getElementById('p-edit-desc').value = p.desc || '';
+            document.getElementById('p-edit-tags').value = p.tags || '';
+            setView('project-editor');
+        }
+    }
+
+    async function saveProjectData() {
+        const title = document.getElementById('p-edit-title').value.trim();
+        const path = document.getElementById('p-edit-path').value.trim();
+        const thumb = document.getElementById('p-edit-thumb').value.trim();
+        const desc = document.getElementById('p-edit-desc').value.trim();
+        const tags = document.getElementById('p-edit-tags').value.trim();
+        
+        if (!title || !path) return alert("Title and HTML Path are required.");
+        
+        const btn = document.querySelector('#view-project-editor .editor-header button:nth-child(2)');
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        let projects = appState.projects;
+        if (editingProjectId) {
+            const idx = projects.findIndex(p => p.id === editingProjectId);
+            if (idx !== -1) {
+                projects[idx].title = title;
+                projects[idx].path = path;
+                projects[idx].thumb = thumb;
+                projects[idx].desc = desc;
+                projects[idx].tags = tags;
+            }
+        } else {
+            projects.unshift({
+                id: Date.now(), title: title, path: path, thumb: thumb, desc: desc, tags: tags
+            });
+        }
+        
+        const sha = await saveGH('storage/content/projects.json', JSON.stringify(projects, null, 2), "Update project entry", appState.shas.projects);
+        if (sha) appState.shas.projects = sha;
+        
+        btn.innerHTML = oldHtml;
+        clickSound(600);
+        renderProjects();
+        setView('projects');
+    }
+
+    async function deleteProject(id, e) {
+        if(e) { e.stopPropagation(); e.preventDefault(); }
+        if (confirm("Delete this project?")) {
+            appState.projects = appState.projects.filter(p => p.id !== id);
+            const sha = await saveGH('storage/content/projects.json', JSON.stringify(appState.projects, null, 2), "Delete project entry", appState.shas.projects);
+            if (sha) appState.shas.projects = sha;
+            renderProjects();
+        }
+    }
+
+    function triggerProjectGHUpload() {
+        if (!GH_TOKEN) return alert("Please configure your GitHub Token in Host Settings first!");
+        document.getElementById('p-gh-upload').click();
+    }
+
+    document.getElementById('p-gh-upload').addEventListener('change', async function() {
+        if (!this.files || !this.files[0]) return;
+        
+        const btn = document.getElementById('btn-p-img-upload');
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            const url = await uploadImageGH(this.files[0]);
+            if(url) document.getElementById('p-edit-thumb').value = url;
+        } catch(err) { alert("Network error during upload."); }
+        
+        btn.innerHTML = oldHtml;
+        this.value = '';
+    });
 
     // --- [MUSIC PLAYER & POPOVER] ---
     var SONG_USER = 'raeist-user', SONG_REPO = 'song', SONG_BASE = 'music', PLAYLISTS = [], RAW_BASE = 'https://raw.githubusercontent.com/' + SONG_USER + '/' + SONG_REPO + '/main/' + SONG_BASE + '/';
@@ -1011,7 +1405,12 @@
     var songs = [], currentLyrics = [], currentIndex = -1, isRandom = false, isRepeat = false, isDragging = false, holdTimer = null, longPress = false, activeTab = 'all', algoMode = false, searchQuery = '';
 
     function fmt(s) { return Math.floor(s/60) + ':' + Math.floor(s%60).toString().padStart(2,'0'); }
-    function fetchTimeout(url, ms) { ms = ms || 8000; var ctrl = new AbortController(), id = setTimeout(() => ctrl.abort(), ms); return fetch(url, {signal: ctrl.signal}).finally(() => clearTimeout(id)); }
+    function fetchTimeout(url, ms) { 
+        ms = ms || 8000; 
+        var ctrl = new AbortController(), id = setTimeout(() => ctrl.abort(), ms); 
+        var headers = GH_TOKEN ? { "Authorization": `token ${GH_TOKEN}` } : {};
+        return fetch(url, {signal: ctrl.signal, headers: headers}).finally(() => clearTimeout(id)); 
+    }
 
     function initLibrary() {
         fetchTimeout('https://api.github.com/repos/' + SONG_USER + '/' + SONG_REPO + '/contents/' + SONG_BASE)
@@ -1156,224 +1555,225 @@
                     }
 
                     if ('mediaSession' in navigator) {
-                        navigator.mediaSession.metadata = new MediaMetadata({ title: s.displayTitle || s.t, artist: s.artist || 'Adnan nafees', album: tags.album || s.playlist, artwork: albumArtUrl ? [{ src: albumArtUrl, sizes: '512x512', type: tags.picture?.format || 'image/jpeg' }] : [] });
-                        navigator.mediaSession.setActionHandler('play', () => { audio.play(); setPlayState(true); }); 
-                        navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); setPlayState(false); }); 
-                        navigator.mediaSession.setActionHandler('previoustrack', playPrev); 
-                        navigator.mediaSession.setActionHandler('nexttrack', playNext);
+                        var artworkArr = albumArtUrl ? [{ src: albumArtUrl, sizes: '512x512', type: tags.picture ? tags.picture.format : 'image/jpeg' }] : [];
+                        navigator.mediaSession.metadata = new MediaMetadata({ title: s.displayTitle || s.t, artist: s.artist || 'Adnan nafees', album: tags.album || s.playlist, artwork: artworkArr });
                     }
-
-                    var sylt = tags.SYLT || (tags.raw && tags.raw.SYLT), uslt = tags.USLT || (tags.raw && tags.raw.USLT);
-                    if (sylt && sylt.data && sylt.data.length) {
-                        sylt.data.forEach(entry => { 
-                            var txt = entry[0] ? entry[0].trim() : '', time = entry[1] / 1000; 
-                            if (!txt) return; 
-                            var p = document.createElement('div'); 
-                            p.className = 'lyric-line'; 
-                            p.textContent = txt; 
-                            lyricsCont.appendChild(p); 
-                            currentLyrics.push({ time: time, el: p }); 
-                        });
-                        if (!currentLyrics.length) tryLrcFallback(s);
-                    } else if (uslt && uslt.lyrics) {
-                        uslt.lyrics.split(/\r?\n/).forEach(line => { 
-                            if (!line.trim()) return; 
-                            var p = document.createElement('div'); 
-                            p.className = 'lyric-line'; 
-                            p.style.opacity = '0.7'; 
-                            p.textContent = line; 
-                            lyricsCont.appendChild(p); 
-                        });
-                        if (!lyricsCont.children.length) tryLrcFallback(s);
-                    } else { 
-                        tryLrcFallback(s); 
-                    }
-                }, onError: () => tryLrcFallback(s)
+                },
+                onError: function(e) {}
             });
-        } else { tryLrcFallback(s); }
-        
-        clickSound(800); 
-        renderLibrary();
+        }
     }
 
-    function tryLrcFallback(s) { 
-        if (s.lrc) fetchTimeout(RAW_BASE + s.playlist + '/' + s.lrc, 5000).then(r => r.text()).then(parseLrc).catch(noLyrics); 
-        else noLyrics(); 
-    }
-    
-    function noLyrics() { lyricsCont.innerHTML = '<div class="no-lyrics-msg">No lyrics available</div>'; }
-    
-    function parseLrc(text) { 
-        var has = false; 
-        text.split('\n').forEach(line => { 
-            var m = line.match(/\[(\d+):(\d+\.\d+)\](.*)/); 
-            if (m) { 
-                var time = parseInt(m[1]) * 60 + parseFloat(m[2]), txt = m[3].trim(); 
-                if (txt) { 
-                    has = true; 
-                    var p = document.createElement('div'); 
-                    p.className = 'lyric-line'; 
-                    p.textContent = txt; 
-                    lyricsCont.appendChild(p); 
-                    currentLyrics.push({time: time, el: p}); 
-                } 
-            } 
-        }); 
-        if (!has) noLyrics(); 
+    function setPlayState(playing) {
+        if (playing) {
+            playIcon.className = 'fas fa-pause';
+            playingAnim.classList.add('active');
+        } else {
+            playIcon.className = 'fas fa-play ml-1';
+            playingAnim.classList.remove('active');
+        }
     }
 
-    function setPlayState(playing) { 
-        playIcon.className = playing ? 'fas fa-pause' : 'fas fa-play ml-1'; 
-        playing ? playingAnim.classList.add('active') : playingAnim.classList.remove('active'); 
-    }
+    playPauseBtn.onclick = function() {
+        if (audio.paused) { audio.play().catch(()=>{}); setPlayState(true); }
+        else { audio.pause(); setPlayState(false); }
+        clickSound(400);
+    };
 
-    audio.ontimeupdate = function() {
-        if (!audio.duration) return; 
-        progressBar.value = (audio.currentTime / audio.duration) * 100; 
-        timeCurrent.textContent = fmt(audio.currentTime); 
+    audio.addEventListener('timeupdate', function() {
+        if (!isDragging && audio.duration) {
+            progressBar.value = (audio.currentTime / audio.duration) * 100;
+            timeCurrent.textContent = fmt(audio.currentTime);
+        }
+        syncLyrics();
+    });
+
+    audio.addEventListener('loadedmetadata', function() {
         timeTotal.textContent = fmt(audio.duration);
-        currentLyrics.forEach((lyric, i) => { 
-            if (audio.currentTime >= lyric.time && (!currentLyrics[i+1] || audio.currentTime < currentLyrics[i+1].time)) { 
-                lyricsCont.querySelectorAll('.lyric-line').forEach(l => l.classList.remove('active')); 
-                lyric.el.classList.add('active'); 
-                lyric.el.scrollIntoView({behavior:'smooth', block:'center'}); 
-            } 
+    });
+
+    audio.addEventListener('ended', function() {
+        setPlayState(false);
+        if (isRepeat) { audio.currentTime = 0; audio.play().catch(()=>{}); setPlayState(true); return; }
+        if (isRandom) { window.__load(Math.floor(Math.random() * songs.length)); return; }
+        if (currentIndex + 1 < songs.length) { window.__load(currentIndex + 1); }
+        else { setPlayState(false); }
+    });
+
+    progressBar.addEventListener('mousedown', function() { isDragging = true; });
+    progressBar.addEventListener('touchstart', function() { isDragging = true; }, {passive:true});
+    progressBar.addEventListener('input', function() {
+        if (audio.duration) {
+            audio.currentTime = (this.value / 100) * audio.duration;
+            timeCurrent.textContent = fmt(audio.currentTime);
+        }
+    });
+    progressBar.addEventListener('mouseup', function() { isDragging = false; });
+    progressBar.addEventListener('touchend', function() { isDragging = false; });
+
+    randomBtn.onclick = function() {
+        isRandom = !isRandom;
+        this.classList.toggle('active-state', isRandom);
+        diceIcon.classList.add('dice-roll');
+        setTimeout(() => diceIcon.classList.remove('dice-roll'), 500);
+        clickSound(400);
+    };
+
+    repeatBtn.onclick = function() {
+        isRepeat = !isRepeat;
+        this.classList.toggle('active-state', isRepeat);
+        clickSound(400);
+    };
+
+    toggleMenu.onclick = function() {
+        musicPlayer.classList.toggle('is-expanded');
+        this.classList.toggle('active-state');
+        clickSound(400);
+    };
+
+    lyricsToggle.onclick = function() {
+        lyricsWin.classList.toggle('is-hidden');
+        this.classList.toggle('active-state');
+        clickSound(400);
+    };
+
+    // Volume control
+    var currentVol = 0.8;
+    audio.volume = currentVol;
+
+    volBtn.onclick = function(e) {
+        e.stopPropagation();
+        volPopover.classList.toggle('active');
+        if (volPopover.classList.contains('active')) {
+            var rect = volBtn.getBoundingClientRect();
+            volPopover.style.left = (rect.left - 20) + 'px';
+            volPopover.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+        }
+    };
+
+    document.addEventListener('click', function(e) {
+        if (!volPopover.contains(e.target) && e.target !== volBtn) {
+            volPopover.classList.remove('active');
+        }
+    });
+
+    function setVolume(v) {
+        currentVol = Math.max(0, Math.min(1, v));
+        audio.volume = currentVol;
+        volLevel.style.height = (currentVol * 100) + '%';
+        if (currentVol === 0) volIcon.className = 'fas fa-volume-mute text-sm';
+        else if (currentVol < 0.5) volIcon.className = 'fas fa-volume-down text-sm';
+        else volIcon.className = 'fas fa-volume-up text-sm';
+    }
+
+    volTrack.addEventListener('click', function(e) {
+        var rect = this.getBoundingClientRect();
+        var pct = 1 - ((e.clientY - rect.top) / rect.height);
+        setVolume(pct);
+    });
+
+    volBtn.addEventListener('mousedown', function(e) {
+        holdTimer = setTimeout(function() {
+            longPress = true;
+            audio.muted = !audio.muted;
+            volIcon.classList.toggle('vibrate-icon', audio.muted);
+            setVolume(audio.muted ? 0 : currentVol);
+        }, 500);
+    });
+    volBtn.addEventListener('mouseup', function() { clearTimeout(holdTimer); });
+    volBtn.addEventListener('touchstart', function(e) {
+        holdTimer = setTimeout(function() {
+            longPress = true;
+            audio.muted = !audio.muted;
+            volIcon.classList.toggle('vibrate-icon', audio.muted);
+        }, 500);
+    }, {passive:true});
+    volBtn.addEventListener('touchend', function() { clearTimeout(holdTimer); longPress = false; });
+
+    setVolume(currentVol);
+
+    // Lyrics sync
+    function parseLRC(lrcText) {
+        var lines = lrcText.split('\n');
+        var result = [];
+        lines.forEach(function(line) {
+            var match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+            if (match) {
+                var time = parseInt(match[1]) * 60 + parseFloat(match[2]);
+                result.push({ time: time, text: match[3].trim() });
+            }
         });
-    };
-
-    audio.onended = function() { 
-        if (isRepeat) { audio.currentTime = 0; audio.play(); } 
-        else if (isRandom) playRandom(); 
-        else playNext(); 
-    };
-
-    function playPrev() {
-        var pool = getFilteredSongs();
-        if (!pool.length) return;
-        var curInPool = pool.findIndex(s => songs.indexOf(s) === currentIndex);
-        if (curInPool > 0) loadSong(songs.indexOf(pool[curInPool - 1]));
-        else loadSong(songs.indexOf(pool[pool.length - 1]));
+        return result.sort(function(a, b) { return a.time - b.time; });
     }
 
-    function playNext() {
-        var pool = getFilteredSongs();
-        if (!pool.length) { setPlayState(false); return; }
-        var curInPool = pool.findIndex(s => songs.indexOf(s) === currentIndex);
-        if (curInPool !== -1 && curInPool < pool.length - 1) loadSong(songs.indexOf(pool[curInPool + 1]));
-        else loadSong(songs.indexOf(pool[0])); // Loop back to top
+    function syncLyrics() {
+        if (!currentLyrics.length) return;
+        var t = audio.currentTime;
+        var active = -1;
+        for (var i = 0; i < currentLyrics.length; i++) {
+            if (t >= currentLyrics[i].time) active = i; else break;
+        }
+        var lines = lyricsCont.querySelectorAll('.lyric-line');
+        lines.forEach(function(el, i) {
+            el.classList.toggle('active', i === active);
+        });
+        if (active >= 0 && lines[active]) {
+            lines[active].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
 
-    function playRandom() {
-        var pool = getFilteredSongs().filter(s => songs.indexOf(s) !== currentIndex); 
-        if (!pool.length) pool = getFilteredSongs(); 
-        if (!pool.length) return; 
-        var picked;
-        
-        if (algoMode) { 
-            var weights = pool.map(s => getPlayCount(s.key) + 1), total = weights.reduce((a, b) => a + b, 0), rand = Math.random() * total, cumul = 0; 
-            for (var i = 0; i < pool.length; i++) { 
-                cumul += weights[i]; 
-                if (rand <= cumul) { picked = pool[i]; break; } 
-            } 
-            if (!picked) picked = pool[pool.length - 1]; 
-        } else { 
-            picked = pool[Math.floor(Math.random() * pool.length)]; 
-        } 
-        
-        loadSong(songs.indexOf(picked));
-    }
-
-    // Playlist Popover Logic
+    // Playlist popover
     function togglePlaylistPopover(e) {
         e.stopPropagation();
         var pop = document.getElementById('playlist-popover');
-        var clickArea = document.getElementById('scroll-to-library');
-        var a = pop.classList.toggle('active');
-        if (a) {
-            renderPlaylistPopover();
-            var rect = clickArea.getBoundingClientRect();
+        if (!pop) return;
+        pop.classList.toggle('active');
+        if (pop.classList.contains('active')) {
+            var rect = e.currentTarget.getBoundingClientRect();
             pop.style.left = rect.left + 'px';
             pop.style.top = (rect.bottom + 8) + 'px';
+            pop.innerHTML = songs.length ? songs.map((s, i) => `<div class="playlist-item${i===currentIndex?' active':''}" onclick="window.__load(${i});document.getElementById('playlist-popover').classList.remove('active')">${s.displayTitle||s.t}</div>`).join('') : '<div style="padding:12px;opacity:0.4;font-size:13px;">No songs loaded</div>';
         }
     }
-
-    function renderPlaylistPopover() {
+    document.addEventListener('click', function(e) {
         var pop = document.getElementById('playlist-popover');
-        var html = '<div class="pl-option ' + (activeTab === 'all' ? 'active' : '') + '" data-tab="all" onclick="selectPlaylistFromPopover(\'all\', event)">All Playlists</div>';
-        PLAYLISTS.forEach(pl => {
-            html += '<div class="pl-option ' + (activeTab === pl ? 'active' : '') + '" data-tab="' + pl + '" onclick="selectPlaylistFromPopover(\'' + pl + '\', event)">' + pl.charAt(0).toUpperCase() + pl.slice(1) + '</div>';
+        if (pop && !pop.contains(e.target)) pop.classList.remove('active');
+    });
+
+    // Search
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            searchQuery = this.value.trim();
+            renderLibrary();
         });
-        pop.innerHTML = html;
     }
 
-    window.selectPlaylistFromPopover = function(tab, e) {
-        if (e) e.stopPropagation();
-        document.querySelectorAll('.lib-tab').forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === tab));
-        activeTab = tab;
-        renderLibrary();
-        
-        var pop = document.getElementById('playlist-popover');
-        if(pop) pop.classList.remove('active');
-        
-        clickSound(400);
-        var surface = document.getElementById('playlist-surface');
-        if(surface) surface.scrollIntoView({behavior: 'smooth'});
-    };
+    // Algo mode
+    if (algoBtn) {
+        algoBtn.onclick = function() {
+            algoMode = !algoMode;
+            this.classList.toggle('active-state', algoMode);
+            renderLibrary();
+            clickSound(400);
+        };
+    }
 
-    searchInput.addEventListener('input', function() { searchQuery = this.value.trim(); renderLibrary(); });
-    algoBtn.onclick = () => { algoMode = !algoMode; algoBtn.classList.toggle('active', algoMode); renderLibrary(); clickSound(algoMode ? 600 : 300); };
-    
-    randomBtn.onpointerdown = () => { longPress = false; holdTimer = setTimeout(() => { longPress = true; isRandom = !isRandom; if (isRandom) { isRepeat = false; repeatBtn.classList.remove('active-state'); } randomBtn.classList.toggle('active-state', isRandom); diceIcon.classList.add('vibrate-icon'); setTimeout(() => diceIcon.classList.remove('vibrate-icon'), 400); if (navigator.vibrate) navigator.vibrate([30,20,30]); }, 600); };
-    randomBtn.onpointerup = () => { if (holdTimer) clearTimeout(holdTimer); if (!longPress) { randomBtn.classList.add('active-state'); setTimeout(() => { if (!isRandom) randomBtn.classList.remove('active-state'); }, 150); if (songs.length) playRandom(); diceIcon.classList.remove('dice-roll'); void diceIcon.offsetWidth; diceIcon.classList.add('dice-roll'); } holdTimer = null; };
-    randomBtn.onpointerleave = () => { if (holdTimer) clearTimeout(holdTimer); }; randomBtn.oncontextmenu = e => e.preventDefault();
-    
-    repeatBtn.onclick = () => { isRepeat = !isRepeat; if (isRepeat) { isRandom = false; randomBtn.classList.remove('active-state'); } repeatBtn.classList.toggle('active-state', isRepeat); clickSound(400); };
-    lyricsToggle.onclick = e => { e.stopPropagation(); var h = lyricsWin.classList.toggle('is-hidden'); lyricsToggle.classList.toggle('active-state', !h); };
-    toggleMenu.onclick = e => { e.stopPropagation(); var ex = musicPlayer.classList.toggle('is-expanded'); toggleMenu.classList.toggle('active-state', ex); clickSound(ex ? 500 : 300); };
-    
-    playPauseBtn.onclick = e => { 
-        e.stopPropagation(); 
-        if (!audio.src && songs.length) { 
-            var pool = getFilteredSongs();
-            if(!pool.length) return;
-            isRandom ? playRandom() : loadSong(songs.indexOf(pool[0])); 
-            return; 
-        } 
-        audio.paused ? audio.play() : audio.pause(); 
-        setPlayState(!audio.paused); 
-    };
+    // Init
+    toggleTheme(currentTheme, true);
+    setAccent(currentAccent, true);
+    renderPalette();
+    renderProjects();
+    loadHomeContent();
+    updateHostUI();
+    initLibrary();
+    trackVisit();
 
-    function setVol(e) { var rect = volTrack.getBoundingClientRect(), cy = e.touches ? e.touches[0].clientY : e.clientY, pct = Math.max(0, Math.min(100, (rect.bottom - cy) / rect.height * 100)); audio.volume = pct / 100; volLevel.style.height = pct + '%'; volIcon.className = pct === 0 ? 'fas fa-volume-mute' : pct < 50 ? 'fas fa-volume-down' : 'fas fa-volume-up'; }
-    volTrack.onmousedown = volTrack.ontouchstart = e => { isDragging = true; setVol(e); }; 
-    window.addEventListener('mousemove', e => { if (isDragging) setVol(e); }); 
-    window.addEventListener('mouseup', () => isDragging = false); 
-    window.addEventListener('touchmove', e => { if (isDragging) setVol(e); }); 
-    window.addEventListener('touchend', () => isDragging = false);
-    
-    volBtn.onclick = e => { e.stopPropagation(); var a = volPopover.classList.toggle('active'); volBtn.classList.toggle('active-state', a); if (a) { var rect = volBtn.getBoundingClientRect(); volPopover.style.left = (rect.left + rect.width / 2 - 16) + 'px'; volPopover.style.top = (rect.top - 140) + 'px'; } };
-    
-    document.addEventListener('click', e => { 
-        if (!volPopover.contains(e.target) && !volBtn.contains(e.target)) { volPopover.classList.remove('active'); volBtn.classList.remove('active-state'); } 
-        if (document.getElementById('playlist-popover') && !document.getElementById('playlist-popover').contains(e.target) && !document.getElementById('scroll-to-library').contains(e.target)) { document.getElementById('playlist-popover').classList.remove('active'); }
-    });
-    
-    progressBar.oninput = () => audio.currentTime = (progressBar.value / 100) * audio.duration;
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('post')) {
+        var pid = parseInt(params.get('post'));
+        if (!isNaN(pid)) setTimeout(function() { openJournal(pid); }, 600);
+    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        toggleTheme(currentTheme, true); 
-        setAccent(currentAccent, true); 
-        loadHomeContent(); 
-        updateHostUI(); 
-        initLibrary();
-        
-        const sharedPostId = new URLSearchParams(window.location.search).get('post'); 
-        if (sharedPostId) { 
-            window.history.replaceState({}, document.title, window.location.pathname); 
-            openJournal(parseInt(sharedPostId)); 
-        }
-    });
 </script>
 </body>
 </html>
-
-
