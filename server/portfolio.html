@@ -651,7 +651,7 @@
     let GH_REPO = localStorage.getItem('gh_repo') || "portfolio-data"; 
 
     // View Counter Setup
-    var VC_TOKEN      = 'YOUR_GITHUB_TOKEN'; // User Requested Fallback Format
+    var VC_TOKEN      = 'YOUR_GITHUB_TOKEN'; // replace with your token
     var VC_REPO       = 'raeist-user/raeist';
     var VC_PATH       = 'storage/data.json';
     var VC_API        = 'https://api.github.com/repos/' + VC_REPO + '/contents/' + VC_PATH;
@@ -727,11 +727,9 @@
         try {
             var isVisited = localStorage.getItem(VISITED_KEY);
             var isReturned = localStorage.getItem('returned_webt');
-            // Use VC_TOKEN per user request (fallback to GH_TOKEN if VC_TOKEN is placeholder and GH_TOKEN exists)
-            var tokenToUse = (VC_TOKEN === 'YOUR_GITHUB_TOKEN' && GH_TOKEN) ? GH_TOKEN : VC_TOKEN;
 
             var res = await fetch(VC_API, {
-                headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + tokenToUse }
+                headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + VC_TOKEN }
             });
             if (!res.ok) throw new Error('HTTP ' + res.status);
 
@@ -757,7 +755,7 @@
             if (needsWrite) {
                 var writeRes = await fetch(VC_API, {
                     method: 'PUT',
-                    headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + tokenToUse, 'Content-Type': 'application/json' },
+                    headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + VC_TOKEN, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         message: 'Update visitor stats',
                         content: encodeB64(JSON.stringify(appState.home, null, 2)),
