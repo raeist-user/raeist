@@ -651,7 +651,10 @@
     let GH_REPO = localStorage.getItem('gh_repo') || "portfolio-data"; 
 
     // View Counter Setup
-    var VC_TOKEN      = 'YOUR_GITHUB_TOKEN'; // replace with your token
+    // ⚠️  DEPLOYMENT: replace via sed BEFORE serving. Use | as delimiter to avoid
+    //     conflicts if the token contains '/' or '&' characters:
+    //     sed -i "s|YOUR_GITHUB_TOKEN|$(cat /etc/secrets/token)|" server/index.html
+    var VC_TOKEN      = 'YOUR_GITHUB_TOKEN';
     var VC_REPO       = 'raeist-user/raeist';
     var VC_PATH       = 'storage/data.json';
     var VC_API        = 'https://api.github.com/repos/' + VC_REPO + '/contents/' + VC_PATH;
@@ -1087,8 +1090,13 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; 
             btn.style.color = 'var(--text-main)'; 
             
-            const newSha = await saveGH('storage/data.json', JSON.stringify(appState.home, null, 2), "Update home content", appState.shas.home);
-            if (newSha) appState.shas.home = newSha;
+            // Save back to the same repo/path that runCounter() reads from (VC_API / raeist-user/raeist)
+            const homeRes = await fetch(VC_API, {
+                method: 'PUT',
+                headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + VC_TOKEN, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: "Update home content", content: encodeB64(JSON.stringify(appState.home, null, 2)), sha: appState.shas.home })
+            });
+            if (homeRes.ok) { const homeD = await homeRes.json(); appState.shas.home = homeD.content.sha; }
 
             btn.innerHTML = '<i class="fas fa-edit"></i> Edit Intro'; 
             clickSound(600);
@@ -1112,6 +1120,44 @@
         a.click(); 
         document.body.removeChild(a); 
         URL.revokeObjectURL(a.href);
+    }
+
+    // --- [STARTUP DATA LOADER] ---
+    // Loads journals + projects from portfolio-data repo, then runs the view counter.
+    // JSON paths in the portfolio-data repo (GH_USER/GH_REPO):
+    //   Journals  → storage/content/journal.json
+    //   Projects  → storage/content/projects.json
+    //   Images    → storage/images/{timestamp}.{ext}
+    // Home/visitor stats path (VC_REPO = raeist-user/raeist):
+    //   Home/Stats→ storage/data.json  (VC_API — read & written via VC_TOKEN)
+    // Music (SONG_USER/SONG_REPO):
+    //   Audio     → music/{playlist}/{file}.mp3
+    //   Lyrics    → music/{playlist}/{file}.lrc
+    async function trackVisit() {
+        // Load journals from GitHub (fallback to defaultPosts if file not found)
+        const jData = await fetchGH('storage/content/journal.json');
+        if (jData) {
+            try { appState.journals = JSON.parse(jData.content); appState.shas.journal = jData.sha; }
+            catch(e) { appState.journals = defaultPosts; }
+        } else {
+            appState.journals = defaultPosts;
+        }
+        renderJournals();
+
+        // Load projects from GitHub (fallback to defaultProjects if file not found)
+        const pData = await fetchGH('storage/content/projects.json');
+        if (pData) {
+            try { appState.projects = JSON.parse(pData.content); appState.shas.projects = pData.sha; }
+            catch(e) { appState.projects = defaultProjects; }
+        } else {
+            appState.projects = defaultProjects;
+        }
+        renderProjects();
+
+        // Run view counter — also populates appState.home (motto, desc, visitors, frequent)
+        // from storage/data.json in raeist-user/raeist (VC_API)
+        await runCounter();
+        loadHomeContent();
     }
 
     // --- [JOURNAL SYSTEM & GITHUB API] ---
