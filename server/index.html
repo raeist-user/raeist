@@ -151,10 +151,12 @@
         body.zen-active #app { padding: 0; max-width: 100vw; }
         
         /* Floating Card in Zen Mode */
-        body.zen-active .container { padding: 24px; display: flex; align-items: center; justify-content: center; height: 100vh; width: 100vw; }
-        body.zen-active .music-player-card { width: 100%; height: auto; min-height: 85vh; border-radius: 32px; border: 1px solid var(--border); justify-content: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+        body.zen-active .container { padding: 0 !important; display: flex; align-items: stretch; justify-content: center; height: 100vh; width: 100vw; overflow: hidden; }
+        body.zen-active .music-player-card { width: 100%; height: 100vh; border-radius: 0; border: none; justify-content: flex-start; overflow-y: auto; }
+        body.zen-active .player-controls-area { max-height: 200px !important; opacity: 1 !important; padding: 0 18px 16px !important; pointer-events: auto !important; }
+        body.zen-active .lyrics-area { max-height: 30vh !important; opacity: 1 !important; padding: 10px 30px !important; }
+        body.zen-active .lyrics-area.is-hidden { display: none !important; }
         body.zen-active .player-controls-area { padding-bottom: 20px; }
-        body.zen-active .lyrics-area { max-height: 35vh; }
         body.zen-active #music-header-row { position: fixed; top: 24px; right: 24px; z-index: 9999; margin: 0; width: auto; }
         body.zen-active #music-header-row h2 { display: none; }
 
@@ -202,10 +204,10 @@
         .active-state .mode-indicator { opacity: 1; transform: translateY(0); }
         
         .volume-container { position: relative; display: flex; align-items: center; justify-content: center; height: 46px; }
-        .volume-popover { position: fixed; background: var(--bg); border: 1px solid var(--border); border-radius: 24px; padding: 16px 12px; height: 130px; display: none; flex-direction: column; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,.12); touch-action: none; transition: background var(--transition), border var(--transition); }
+        .volume-popover { position: fixed; background: var(--bg); border: 1px solid var(--border); border-radius: 24px; padding: 16px 12px; width: 40px; height: 130px; display: none; flex-direction: column; align-items: center; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,.25); touch-action: none; transition: background var(--transition), border var(--transition); }
         .volume-popover.active { display: flex; }
-        .volume-bar-wrapper { width: 8px; height: 100%; background: rgba(128,128,128,.25); border-radius: 10px; position: relative; cursor: pointer; margin: 0 auto; }
-        .volume-level { position: absolute; bottom: 0; width: 100%; background: var(--accent); border-radius: 10px; pointer-events: none; transition: background var(--transition); }
+        .volume-bar-wrapper { width: 8px; height: 100%; background: rgba(128,128,128,.25); border-radius: 10px; position: relative; cursor: pointer; margin: 0 auto; flex-shrink: 0; }
+        .volume-level { position: absolute; bottom: 0; width: 100%; background: var(--accent); border-radius: 10px; pointer-events: none; transition: height 0.1s ease, background var(--transition); }
         
         .vibrate-icon { animation: icon-shake .15s linear infinite; }
         @keyframes icon-shake { 0%{transform:translate(0,0)} 25%{transform:translate(1.5px,.5px)} 50%{transform:translate(-1.5px,-.5px)} 75%{transform:translate(1px,-1px)} 100%{transform:translate(0,0)} }
@@ -215,9 +217,9 @@
         /* Playlist Popover (Header Tap) */
         .playlist-popover { position: fixed; border: 1px solid var(--border); border-radius: 20px; padding: 12px; display: none; flex-direction: column; gap: 4px; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,.3); max-height: 250px; overflow-y: auto; min-width: 200px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: var(--glass-bg); }
         .playlist-popover.active { display: flex; animation: viewIn 0.2s ease-out forwards; }
-        .pl-option { padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; color: var(--text-main); cursor: pointer; transition: var(--transition); }
-        .pl-option:hover { background: rgba(128,128,128,0.1); }
-        .pl-option.active { background: var(--accent); color: var(--bg); }
+        .pl-option, .playlist-item { padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; color: var(--text-main); cursor: pointer; transition: var(--transition); }
+        .pl-option:hover, .playlist-item:hover { background: rgba(128,128,128,0.1); }
+        .pl-option.active, .playlist-item.active { background: var(--accent); color: var(--bg); }
 
         /* --- [FIXED PLAYLIST SEARCH & HEADER] --- */
         .playlist-surface { margin-top: 32px; display: flex; flex-direction: column; color: var(--text-main); }
@@ -386,8 +388,8 @@
 
                 <div class="logo-block mx-auto" id="home-logo" onclick="handleLogoClick()">Ræ</div>
                 <h2 class="text-2xl font-bold mt-2 mb-6" style="letter-spacing:-0.02em;"><span style="color:var(--accent); transition:color var(--transition);">Adnan</span> nafees</h2>
-                <h1 class="hero-title" id="home-motto">Simplicity is the<br/><span style="color:var(--accent); transition:color var(--transition);">Ultimate</span> Sophistication.</h1>
-                <p class="hero-desc" id="home-desc" style="color:var(--text-dim); max-width:80%; margin: 0 auto;">Building digital logic into aesthetic experiences.</p>
+                <h1 class="hero-title" id="home-motto"></h1>
+                <p class="hero-desc" id="home-desc" style="color:var(--text-dim); max-width:80%; margin: 0 auto;"></p>
                 
                 <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin: 16px auto 0; flex-wrap: wrap;">
                     <!-- Time Pill -->
@@ -1053,8 +1055,10 @@
     }
 
     function loadHomeContent() {
-        document.getElementById('home-motto').innerHTML = parseAccent(appState.home.motto || defaultMottoRaw);
-        document.getElementById('home-desc').innerHTML = parseAccent(appState.home.desc || defaultDescRaw);
+        // Only render if GitHub data has loaded — never show hardcoded defaults
+        var src = appState.home;
+        if (src.motto !== undefined) document.getElementById('home-motto').innerHTML = parseAccent(src.motto || '');
+        if (src.desc !== undefined) document.getElementById('home-desc').innerHTML = parseAccent(src.desc || '');
     }
 
     async function toggleHomeEdit() {
@@ -1252,7 +1256,12 @@
 
         try {
             const url = await uploadImageGH(this.files[0]);
-            if(url) document.execCommand('insertImage', false, url);
+            if(url) {
+                const editor = document.getElementById('editor-content');
+                editor.focus();
+                const imgHtml = `<img src="${url}" style="max-width:100%;border-radius:12px;margin:10px 0;" alt="uploaded">`;
+                document.execCommand('insertHTML', false, imgHtml);
+            }
         } catch(err) { alert("Network error during upload."); }
         
         btn.innerHTML = oldHtml;
@@ -1549,6 +1558,30 @@
         toggleMenu.classList.add('active-state'); 
         lyricsCont.innerHTML = ''; 
         currentLyrics = [];
+
+        // Load LRC lyrics
+        if (s.lrc) {
+            var lrcUrl = RAW_BASE + s.playlist + '/' + s.lrc;
+            fetch(lrcUrl, GH_TOKEN ? { headers: { "Authorization": "token " + GH_TOKEN } } : {})
+                .then(function(r) { return r.ok ? r.text() : null; })
+                .then(function(text) {
+                    if (text) {
+                        currentLyrics = parseLRC(text);
+                        if (currentLyrics.length) {
+                            lyricsCont.innerHTML = currentLyrics.map(function(l) { return '<div class="lyric-line">' + (l.text || '♪') + '</div>'; }).join('');
+                        } else {
+                            lyricsCont.innerHTML = '<div class="no-lyrics-msg">Lyrics not available</div>';
+                        }
+                    } else {
+                        lyricsCont.innerHTML = '<div class="no-lyrics-msg">Lyrics not available</div>';
+                    }
+                })
+                .catch(function() {
+                    lyricsCont.innerHTML = '<div class="no-lyrics-msg">Lyrics not available</div>';
+                });
+        } else {
+            lyricsCont.innerHTML = '<div class="no-lyrics-msg">Lyrics not available</div>';
+        }
         
         var metaRow = document.getElementById('song-meta-row'), songAlbumEl = document.getElementById('song-album'), songYearEl = document.getElementById('song-year'), songYearSep = document.getElementById('song-year-sep');
         metaRow.style.setProperty('display', 'none', 'important'); 
@@ -1645,13 +1678,42 @@
     progressBar.addEventListener('mouseup', function() { isDragging = false; });
     progressBar.addEventListener('touchend', function() { isDragging = false; });
 
-    randomBtn.onclick = function() {
-        isRandom = !isRandom;
-        this.classList.toggle('active-state', isRandom);
-        diceIcon.classList.add('dice-roll');
-        setTimeout(() => diceIcon.classList.remove('dice-roll'), 500);
-        clickSound(400);
-    };
+    // Dice: tap = skip next, hold (500ms) = toggle random lock
+    var diceHoldTimer = null, diceLongPressed = false;
+    randomBtn.addEventListener('pointerdown', function(e) {
+        diceLongPressed = false;
+        diceHoldTimer = setTimeout(function() {
+            diceLongPressed = true;
+            isRandom = !isRandom;
+            randomBtn.classList.toggle('active-state', isRandom);
+            diceIcon.classList.add('dice-roll');
+            setTimeout(function() { diceIcon.classList.remove('dice-roll'); }, 500);
+            clickSound(isRandom ? 600 : 300);
+        }, 500);
+    });
+    randomBtn.addEventListener('pointerup', function(e) {
+        clearTimeout(diceHoldTimer);
+        if (!diceLongPressed) {
+            // Single tap: skip to next song
+            if (songs.length > 0) {
+                var nextIdx;
+                if (isRandom) {
+                    nextIdx = Math.floor(Math.random() * songs.length);
+                } else {
+                    nextIdx = (currentIndex + 1 < songs.length) ? currentIndex + 1 : 0;
+                }
+                window.__load(nextIdx);
+                diceIcon.classList.add('dice-roll');
+                setTimeout(function() { diceIcon.classList.remove('dice-roll'); }, 500);
+            }
+            clickSound(400);
+        }
+        diceLongPressed = false;
+    });
+    randomBtn.addEventListener('pointercancel', function() {
+        clearTimeout(diceHoldTimer);
+        diceLongPressed = false;
+    });
 
     repeatBtn.onclick = function() {
         isRepeat = !isRepeat;
@@ -1668,6 +1730,10 @@
     lyricsToggle.onclick = function() {
         lyricsWin.classList.toggle('is-hidden');
         this.classList.toggle('active-state');
+        // Show not-available if no lyrics loaded yet
+        if (!lyricsWin.classList.contains('is-hidden') && lyricsCont.innerHTML.trim() === '') {
+            lyricsCont.innerHTML = '<div class="no-lyrics-msg">Lyrics not available</div>';
+        }
         clickSound(400);
     };
 
@@ -1680,8 +1746,12 @@
         volPopover.classList.toggle('active');
         if (volPopover.classList.contains('active')) {
             var rect = volBtn.getBoundingClientRect();
-            volPopover.style.left = (rect.left - 20) + 'px';
-            volPopover.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+            var popW = 40;
+            var leftPos = rect.left + (rect.width / 2) - (popW / 2);
+            leftPos = Math.max(8, Math.min(leftPos, window.innerWidth - popW - 8));
+            volPopover.style.left = leftPos + 'px';
+            volPopover.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+            volPopover.style.top = 'auto';
         }
     };
 
@@ -1756,7 +1826,7 @@
         }
     }
 
-    // Playlist popover
+    // Playlist popover — shows playlists only, not individual songs
     function togglePlaylistPopover(e) {
         e.stopPropagation();
         var pop = document.getElementById('playlist-popover');
@@ -1764,10 +1834,28 @@
         pop.classList.toggle('active');
         if (pop.classList.contains('active')) {
             var rect = e.currentTarget.getBoundingClientRect();
-            pop.style.left = rect.left + 'px';
+            pop.style.left = Math.max(8, rect.left) + 'px';
             pop.style.top = (rect.bottom + 8) + 'px';
-            pop.innerHTML = songs.length ? songs.map((s, i) => `<div class="playlist-item${i===currentIndex?' active':''}" onclick="window.__load(${i});document.getElementById('playlist-popover').classList.remove('active')">${s.displayTitle||s.t}</div>`).join('') : '<div style="padding:12px;opacity:0.4;font-size:13px;">No songs loaded</div>';
+            pop.style.bottom = 'auto';
+            if (PLAYLISTS.length) {
+                var allHtml = `<div class="playlist-item${activeTab==='all'?' active':''}" onclick="switchToPlaylist('all');document.getElementById('playlist-popover').classList.remove('active')"><i class="fas fa-music" style="margin-right:8px;opacity:.5;font-size:.8rem;"></i>All Playlists</div>`;
+                var plHtml = PLAYLISTS.map(pl => `<div class="playlist-item${activeTab===pl?' active':''}" onclick="switchToPlaylist('${pl}');document.getElementById('playlist-popover').classList.remove('active')"><i class="fas fa-compact-disc" style="margin-right:8px;opacity:.5;font-size:.8rem;"></i>${pl.charAt(0).toUpperCase() + pl.slice(1)}</div>`).join('');
+                pop.innerHTML = allHtml + plHtml;
+            } else {
+                pop.innerHTML = '<div style="padding:12px;opacity:0.4;font-size:13px;">No playlists loaded</div>';
+            }
         }
+    }
+    function switchToPlaylist(tab) {
+        activeTab = tab;
+        var tabsEl = document.getElementById('lib-tabs');
+        if (tabsEl) tabsEl.querySelectorAll('.lib-tab').forEach(function(t) {
+            t.classList.toggle('active', t.getAttribute('data-tab') === tab);
+        });
+        renderLibrary();
+        var surf = document.getElementById('playlist-surface');
+        if (surf) setTimeout(function() { surf.scrollIntoView({ behavior: 'smooth' }); }, 50);
+        clickSound(400);
     }
     document.addEventListener('click', function(e) {
         var pop = document.getElementById('playlist-popover');
