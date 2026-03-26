@@ -214,6 +214,12 @@
         .dice-roll { animation: roll .5s cubic-bezier(.4,0,.2,1); }
         @keyframes roll { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
 
+        /* Muted state */
+        .vol-muted #volume-icon { color: #ef4444 !important; }
+        .vol-muted .volume-level { background: #ef4444 !important; }
+        #nav-music .mute-badge { display: none; position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 1.5px solid var(--bg); }
+        #nav-music.muted-nav .mute-badge { display: block; }
+
         /* Playlist Popover (Header Tap) */
         .playlist-popover { position: fixed; border: 1px solid var(--border); border-radius: 20px; padding: 12px; display: none; flex-direction: column; gap: 4px; z-index: 9999; box-shadow: 0 10px 30px rgba(0,0,0,.3); max-height: 250px; overflow-y: auto; min-width: 200px; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); background: var(--glass-bg); }
         .playlist-popover.active { display: flex; animation: viewIn 0.2s ease-out forwards; }
@@ -636,7 +642,7 @@
         <footer>
             <button class="nav-icon active" onclick="setView('home')" id="nav-home"><i class="fas fa-home"></i></button>
             <button class="nav-icon" onclick="setView('projects')" id="nav-projects"><i class="fas fa-layer-group"></i></button>
-            <button class="nav-icon" onclick="setView('music')" id="nav-music"><i class="fas fa-music"></i></button>
+            <button class="nav-icon" onclick="setView('music')" id="nav-music"><i class="fas fa-music"></i><span class="mute-badge"></span></button>
             <button class="nav-icon" onclick="setView('blog')" id="nav-blog"><i class="fas fa-book"></i></button>
             <button class="nav-icon" onclick="setView('settings')" id="nav-settings"><i class="fas fa-sliders-h"></i></button>
         </footer>
@@ -1779,62 +1785,105 @@
         clickSound(400);
     };
 
-    // Volume control
+    // Volume control — tap = open/close popover, hold 500ms = toggle mute
     var currentVol = 0.8;
+    var isMuted = false;
+    var volHoldTimer = null, volHoldFired = false;
     audio.volume = currentVol;
 
-    volBtn.onclick = function(e) {
-        e.stopPropagation();
-        volPopover.classList.toggle('active');
-        if (volPopover.classList.contains('active')) {
-            var rect = volBtn.getBoundingClientRect();
-            var popW = 40;
-            var leftPos = rect.left + (rect.width / 2) - (popW / 2);
-            leftPos = Math.max(8, Math.min(leftPos, window.innerWidth - popW - 8));
-            volPopover.style.left = leftPos + 'px';
-            volPopover.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
-            volPopover.style.top = 'auto';
-        }
-    };
+    function setVolume(v) {
+        currentVol = Math.max(0, Math.min(1, v));
+        if (!isMuted) audio.volume = currentVol;
+        volLevel.style.height = (currentVol * 100) + '%';
+        updateVolIcon();
+    }
 
-    document.addEventListener('click', function(e) {
-        if (!volPopover.contains(e.target) && e.target !== volBtn) {
+    function updateVolIcon() {
+        var navBtn = document.getElementById('nav-music');
+        if (isMuted || currentVol === 0) {
+            volIcon.className = 'fas fa-volume-xmark text-sm';
+            volBtn.classList.add('vol-muted');
+            if (navBtn) navBtn.classList.add('muted-nav');
+        } else if (currentVol < 0.5) {
+            volIcon.className = 'fas fa-volume-low text-sm';
+            volBtn.classList.remove('vol-muted');
+            if (navBtn) navBtn.classList.remove('muted-nav');
+        } else {
+            volIcon.className = 'fas fa-volume-high text-sm';
+            volBtn.classList.remove('vol-muted');
+            if (navBtn) navBtn.classList.remove('muted-nav');
+        }
+    }
+
+    function toggleMute() {
+        isMuted = !isMuted;
+        audio.muted = isMuted;
+        if (isMuted) {
+            volLevel.style.height = '0%';
+        } else {
+            volLevel.style.height = (currentVol * 100) + '%';
+            audio.volume = currentVol;
+        }
+        updateVolIcon();
+        clickSound(isMuted ? 250 : 500);
+    }
+
+    // Tap = toggle popover, Hold = toggle mute
+    volBtn.addEventListener('pointerdown', function(e) {
+        volHoldFired = false;
+        volHoldTimer = setTimeout(function() {
+            volHoldFired = true;
+            toggleMute();
+        }, 500);
+    });
+    volBtn.addEventListener('pointerup', function(e) {
+        clearTimeout(volHoldTimer);
+        if (!volHoldFired) {
+            // Tap: toggle popover
+            e.stopPropagation();
+            volPopover.classList.toggle('active');
+            if (volPopover.classList.contains('active')) {
+                var rect = volBtn.getBoundingClientRect();
+                var popW = 40;
+                var leftPos = rect.left + (rect.width / 2) - (popW / 2);
+                leftPos = Math.max(8, Math.min(leftPos, window.innerWidth - popW - 8));
+                volPopover.style.left = leftPos + 'px';
+                volPopover.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+                volPopover.style.top = 'auto';
+            }
+        }
+        volHoldFired = false;
+    });
+    volBtn.addEventListener('pointercancel', function() {
+        clearTimeout(volHoldTimer);
+        volHoldFired = false;
+    });
+
+    document.addEventListener('pointerdown', function(e) {
+        if (!volPopover.contains(e.target) && e.target !== volBtn && !volBtn.contains(e.target)) {
             volPopover.classList.remove('active');
         }
     });
 
-    function setVolume(v) {
-        currentVol = Math.max(0, Math.min(1, v));
-        audio.volume = currentVol;
-        volLevel.style.height = (currentVol * 100) + '%';
-        if (currentVol === 0) volIcon.className = 'fas fa-volume-mute text-sm';
-        else if (currentVol < 0.5) volIcon.className = 'fas fa-volume-down text-sm';
-        else volIcon.className = 'fas fa-volume-up text-sm';
-    }
-
-    volTrack.addEventListener('click', function(e) {
-        var rect = this.getBoundingClientRect();
-        var pct = 1 - ((e.clientY - rect.top) / rect.height);
+    // Volume bar: click AND touch drag
+    var volDragging = false;
+    function applyVolFromEvent(e) {
+        var rect = volTrack.getBoundingClientRect();
+        var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        var pct = 1 - ((clientY - rect.top) / rect.height);
+        if (isMuted) { isMuted = false; audio.muted = false; updateVolIcon(); }
         setVolume(pct);
+    }
+    volTrack.addEventListener('pointerdown', function(e) {
+        volDragging = true;
+        volTrack.setPointerCapture(e.pointerId);
+        applyVolFromEvent(e);
     });
-
-    volBtn.addEventListener('mousedown', function(e) {
-        holdTimer = setTimeout(function() {
-            longPress = true;
-            audio.muted = !audio.muted;
-            volIcon.classList.toggle('vibrate-icon', audio.muted);
-            setVolume(audio.muted ? 0 : currentVol);
-        }, 500);
+    volTrack.addEventListener('pointermove', function(e) {
+        if (volDragging) applyVolFromEvent(e);
     });
-    volBtn.addEventListener('mouseup', function() { clearTimeout(holdTimer); });
-    volBtn.addEventListener('touchstart', function(e) {
-        holdTimer = setTimeout(function() {
-            longPress = true;
-            audio.muted = !audio.muted;
-            volIcon.classList.toggle('vibrate-icon', audio.muted);
-        }, 500);
-    }, {passive:true});
-    volBtn.addEventListener('touchend', function() { clearTimeout(holdTimer); longPress = false; });
+    volTrack.addEventListener('pointerup', function(e) { volDragging = false; });
+    volTrack.addEventListener('pointercancel', function(e) { volDragging = false; });
 
     setVolume(currentVol);
 
