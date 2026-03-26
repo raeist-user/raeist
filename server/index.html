@@ -388,8 +388,8 @@
 
                 <div class="logo-block mx-auto" id="home-logo" onclick="handleLogoClick()">Ræ</div>
                 <h2 class="text-2xl font-bold mt-2 mb-6" style="letter-spacing:-0.02em;"><span style="color:var(--accent); transition:color var(--transition);">Adnan</span> nafees</h2>
-                <h1 class="hero-title" id="home-motto"></h1>
-                <p class="hero-desc" id="home-desc" style="color:var(--text-dim); max-width:80%; margin: 0 auto;"></p>
+                <h1 class="hero-title" id="home-motto" data-content=""></h1>
+                <p class="hero-desc" id="home-desc" data-content="" style="color:var(--text-dim); max-width:80%; margin: 0 auto;"></p>
                 
                 <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin: 16px auto 0; flex-wrap: wrap;">
                     <!-- Time Pill -->
@@ -659,13 +659,14 @@
     var VC_REPO       = 'raeist-user/raeist';
     var VC_PATH       = 'storage/data.json';
     var VC_API        = 'https://api.github.com/repos/' + VC_REPO + '/contents/' + VC_PATH;
+    var SITE_FILE_API = 'https://api.github.com/repos/' + VC_REPO + '/contents/server/index.html';
     var VISITED_KEY   = 'visited_webt';
     // All GitHub operations (journals, projects, images) share the same token as data.json
     var GH_TOKEN = VC_TOKEN;
 
     const appState = {
-        journals: [], projects: [], home: { motto: "", desc: "" },
-        shas: { journal: null, projects: null, home: null }
+        journals: [], projects: [], home: { visitors: 0, frequent: 0 },
+        shas: { journal: null, projects: null, home: null, siteHtml: null }
     };
 
     function encodeB64(str) { return btoa(unescape(encodeURIComponent(str))); }
@@ -736,8 +737,10 @@
             if (!res.ok) throw new Error('HTTP ' + res.status);
 
             var data = await res.json();
-            // Assign to appState to ensure Host edits don't overwrite stats
-            appState.home = JSON.parse(decodeB64(data.content));
+            // Only read visitor stats from data.json — motto/desc live in server/index.html
+            var parsed = JSON.parse(decodeB64(data.content));
+            appState.home.visitors = parsed.visitors || 0;
+            appState.home.frequent = parsed.frequent || 0;
             appState.shas.home = data.sha;
             
             var currentVisitors = appState.home.visitors || 0;
@@ -755,12 +758,13 @@
             }
 
             if (needsWrite) {
+                var statsOnly = { visitors: appState.home.visitors, frequent: appState.home.frequent };
                 var writeRes = await fetch(VC_API, {
                     method: 'PUT',
                     headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + VC_TOKEN, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         message: 'Update visitor stats',
-                        content: encodeB64(JSON.stringify(appState.home, null, 2)),
+                        content: encodeB64(JSON.stringify(statsOnly, null, 2)),
                         sha: appState.shas.home
                     })
                 });
@@ -1055,51 +1059,89 @@
     }
 
     function loadHomeContent() {
-        // Only render if GitHub data has loaded — never show hardcoded defaults
-        var src = appState.home;
-        if (src.motto !== undefined) document.getElementById('home-motto').innerHTML = parseAccent(src.motto || '');
-        if (src.desc !== undefined) document.getElementById('home-desc').innerHTML = parseAccent(src.desc || '');
+        var mottoEl = document.getElementById('home-motto');
+        var descEl  = document.getElementById('home-desc');
+        var motto = (mottoEl.getAttribute('data-content') || '').replace(/\\n/g, '\n');
+        var desc  = (descEl.getAttribute('data-content')  || '').replace(/\\n/g, '\n');
+        if (motto) mottoEl.innerHTML = parseAccent(motto);
+        if (desc)  descEl.innerHTML  = parseAccent(desc);
     }
 
     async function toggleHomeEdit() {
         isHomeEditing = !isHomeEditing;
         const mottoEl = document.getElementById('home-motto');
-        const descEl = document.getElementById('home-desc');
-        const btn = document.getElementById('edit-home-btn');
-        
+        const descEl  = document.getElementById('home-desc');
+        const btn     = document.getElementById('edit-home-btn');
+
         if (isHomeEditing) {
-            mottoEl.contentEditable = true; 
-            descEl.contentEditable = true; 
-            mottoEl.style.borderBottom = '1px dashed var(--border)'; 
-            descEl.style.borderBottom = '1px dashed var(--border)';
-            mottoEl.innerText = appState.home.motto || defaultMottoRaw; 
-            descEl.innerText = appState.home.desc || defaultDescRaw; 
-            mottoEl.focus(); 
-            btn.innerHTML = '<i class="fas fa-save"></i> Save'; 
+            // Show current raw text for editing
+            var curMottoRaw = (mottoEl.getAttribute('data-content') || '').replace(/\\n/g, '\n');
+            var curDescRaw  = (descEl.getAttribute('data-content')  || '').replace(/\\n/g, '\n');
+            mottoEl.contentEditable = true;
+            descEl.contentEditable  = true;
+            mottoEl.style.borderBottom = '1px dashed var(--border)';
+            descEl.style.borderBottom  = '1px dashed var(--border)';
+            mottoEl.innerText = curMottoRaw;
+            descEl.innerText  = curDescRaw;
+            mottoEl.focus();
+            btn.innerHTML = '<i class="fas fa-save"></i> Save';
             btn.style.color = 'var(--accent)';
         } else {
-            mottoEl.contentEditable = false; 
-            descEl.contentEditable = false; 
-            mottoEl.style.borderBottom = 'none'; 
-            descEl.style.borderBottom = 'none';
-            
-            appState.home.motto = mottoEl.innerText;
-            appState.home.desc = descEl.innerText;
-            mottoEl.innerHTML = parseAccent(mottoEl.innerText); 
-            descEl.innerHTML = parseAccent(descEl.innerText);
-            
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; 
-            btn.style.color = 'var(--text-main)'; 
-            
-            // Save back to the same repo/path that runCounter() reads from (VC_API / raeist-user/raeist)
-            const homeRes = await fetch(VC_API, {
-                method: 'PUT',
-                headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + VC_TOKEN, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: "Update home content", content: encodeB64(JSON.stringify(appState.home, null, 2)), sha: appState.shas.home })
-            });
-            if (homeRes.ok) { const homeD = await homeRes.json(); appState.shas.home = homeD.content.sha; }
+            mottoEl.contentEditable = false;
+            descEl.contentEditable  = false;
+            mottoEl.style.borderBottom = 'none';
+            descEl.style.borderBottom  = 'none';
 
-            btn.innerHTML = '<i class="fas fa-edit"></i> Edit Intro'; 
+            var newMottoRaw = mottoEl.innerText.trim();
+            var newDescRaw  = descEl.innerText.trim();
+
+            // Update rendered HTML immediately
+            mottoEl.setAttribute('data-content', newMottoRaw.replace(/\n/g, '\\n'));
+            descEl.setAttribute('data-content',  newDescRaw.replace(/\n/g, '\\n'));
+            mottoEl.innerHTML = parseAccent(newMottoRaw);
+            descEl.innerHTML  = parseAccent(newDescRaw);
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.style.color = 'var(--text-main)';
+
+            // --- Patch server/index.html directly on GitHub ---
+            try {
+                // 1. Fetch current file
+                var siteRes = await fetch(SITE_FILE_API, {
+                    headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + VC_TOKEN }
+                });
+                if (!siteRes.ok) throw new Error('Could not fetch site file');
+                var siteData = await siteRes.json();
+                var siteHtml = decodeB64(siteData.content);
+                var siteSha  = siteData.sha;
+
+                // 2. Replace data-content attrs (encoded newlines)
+                var mottoEnc = newMottoRaw.replace(/\\/g, '\\\\').replace(/\n/g, '\\n');
+                var descEnc  = newDescRaw.replace(/\\/g, '\\\\').replace(/\n/g, '\\n');
+
+                // Replace data-content on home-motto element
+                siteHtml = siteHtml.replace(
+                    /(id="home-motto"[^>]*)data-content="[^"]*"/,
+                    '$1data-content="' + mottoEnc + '"'
+                );
+                // Replace data-content on home-desc element
+                siteHtml = siteHtml.replace(
+                    /(id="home-desc"[^>]*)data-content="[^"]*"/,
+                    '$1data-content="' + descEnc + '"'
+                );
+
+                // 3. PUT back
+                var putRes = await fetch(SITE_FILE_API, {
+                    method: 'PUT',
+                    headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'token ' + VC_TOKEN, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'Update home content', content: encodeB64(siteHtml), sha: siteSha })
+                });
+                if (!putRes.ok) { var err = await putRes.json(); throw new Error(err.message); }
+            } catch(e) {
+                alert('Save failed: ' + e.message);
+            }
+
+            btn.innerHTML = '<i class="fas fa-edit"></i> Edit Intro';
             clickSound(600);
         }
     }
